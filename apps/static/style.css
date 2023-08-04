@@ -1,0 +1,25 @@
+header, footer {
+  background-color: navy;
+  color: white; /* Change the text color to white for better readability */
+  display: flex; /* Use flexbox layout */
+  justify-content: space-between; /* Space out flex items along the main axis */
+  padding: 10px; /* Add some padding */
+}
+
+header h1, footer p {
+  margin: 0; /* Remove default margins */
+}
+
+nav {
+  display: flex; /* Use flexbox layout for navigation links too */
+  gap: 10px; /* Add some space between links */
+}
+
+a {
+  color: white; /* Change link color to white */
+  text-decoration: none; /* Remove underline */
+}
+
+a:hover {
+  color: lightgray; /* Change link color to light gray when hovered over */
+}
