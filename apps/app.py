@@ -1,9 +1,10 @@
-from apps.config import config
 from dash import Dash
-from flask import Flask, render_template
+from flask import Flask, g, render_template
+from flask_login import LoginManager, current_user
 
+from .config import config
 from .dash_app import init_dash
-from .models import db
+from .models import User, db
 
 
 def create_app(config_key):
@@ -15,12 +16,25 @@ def create_app(config_key):
     with app.app_context():
         db.create_all()
 
+    login_manager = LoginManager()
+    login_manager.login_view = "main.signin"
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+    login_manager.init_app(app)
+
     from .views import main
 
     app.register_blueprint(main)
 
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(500, internal_server_error)
+
+    @app.before_request
+    def before_request():
+        g.user = current_user
 
     app_dash = Dash(server=app, url_base_pathname="/dash/")
     init_dash(app_dash)

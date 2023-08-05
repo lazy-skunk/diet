@@ -30,3 +30,9 @@ class SignupForm(FlaskForm):
         validators=[DataRequired(), EqualTo("password", message="パスワードが一致しません")],
     )
     submit = SubmitField("登録")
+
+
+class SigninForm(FlaskForm):
+    username = StringField("ユーザー名", validators=[DataRequired()])
+    password = PasswordField("パスワード", validators=[DataRequired()])
+    submit = SubmitField("ログイン")

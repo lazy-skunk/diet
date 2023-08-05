@@ -4,33 +4,19 @@ import dash
 import plotly.graph_objs as go
 from dash import dcc, html
 from dash.dependencies import Input, Output
+from flask import g
 
-weight_data = [100, 95, 90, 85, 80, 75, 70, 65, 120, 110]
-body_fat_data = [23, 22, 22.5, 21.5, 22, 21, 21.5, 20.5, 21, 23]
-dates = [
-    "2023-08-01",
-    "2023-08-02",
-    "2023-08-03",
-    "2023-08-04",
-    "2023-08-05",
-    "2023-08-06",
-    "2023-08-07",
-    "2023-08-08",
-    "2023-08-09",
-    "2023-08-10",
-]
-
-
-dates = [datetime.strptime(date, "%Y-%m-%d").date() for date in dates]
+from .models import BodyComposition
 
 
 def init_dash(app):
-    # Dashアプリケーションのレイアウトを定義
     app.layout = html.Div([dcc.Graph(id="combined-graph")])
 
-    # 体重と体脂肪率のグラフを作成するコールバック関数
     @app.callback(Output("combined-graph", "figure"), [Input("combined-graph", "id")])
     def update_combined_graph(input_id):
+        user_id = g.user.id if g.user.is_authenticated else None
+        weight_data, body_fat_data, dates = get_data_from_db(user_id)
+
         trace1 = go.Scatter(
             x=dates,
             y=weight_data,
@@ -58,3 +44,32 @@ def init_dash(app):
         )
 
         return {"data": [trace1, trace2], "layout": layout}
+
+
+def get_data_from_db(user_id):
+    if user_id is None:
+        weight_data = [100, 95, 96, 91, 92, 87, 88, 83, 84, 79]
+        body_fat_data = [23, 22, 21, 20, 19, 18, 17, 16, 15, 14]
+        dates = [
+            "2023-08-01",
+            "2023-08-02",
+            "2023-08-03",
+            "2023-08-04",
+            "2023-08-05",
+            "2023-08-06",
+            "2023-08-07",
+            "2023-08-08",
+            "2023-08-09",
+            "2023-08-10",
+        ]
+    else:
+        weight_data = []
+        body_fat_data = []
+        dates = []
+        body_compositions = BodyComposition.query.filter_by(user_id=user_id).all()
+        for body_composition in body_compositions:
+            weight_data.append(body_composition.weight)
+            body_fat_data.append(body_composition.body_fat)
+            dates.append(body_composition.date)
+
+    return weight_data, body_fat_data, dates

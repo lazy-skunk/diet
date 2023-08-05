@@ -3,19 +3,9 @@
 <h1>体重記録</h1>
 <form method="POST" action="{{ url_for('main.log_weight') }}">
   {{ form.csrf_token }}
-
-  <div class="form-group">
-    {{ form.date.label }}: {{ form.date(class="form-control") }}
-  </div>
-
-  <div class="form-group">
-    {{ form.weight.label }}: {{ form.weight(class="form-control") }}
-  </div>
-
-  <div class="form-group">
-    {{ form.body_fat.label }}: {{ form.body_fat(class="form-control") }}
-  </div>
-
-  {{ form.submit(class="btn btn-primary") }}
+  <div>{{ form.date.label }}: {{ form.date }}</div>
+  <div>{{ form.weight.label }}: {{ form.weight }}</div>
+  <div>{{ form.body_fat.label }}: {{ form.body_fat }}</div>
+  <div>{{ form.submit }}</div>
 </form>
 {% endblock %}
