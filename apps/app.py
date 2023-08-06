@@ -36,7 +36,11 @@ def create_app(config_key):
     def before_request():
         g.user = current_user
 
-    app_dash = Dash(server=app, url_base_pathname="/dash/")
+    app_dash = Dash(
+        server=app,
+        url_base_pathname="/dash/",
+        external_stylesheets=["/static/dash_style.css"],
+    )
     init_dash(app_dash)
 
     return app

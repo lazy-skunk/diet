@@ -1,0 +1,10 @@
+#duration-label {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+#duration-dropdown {
+  display: inline-block;
+  vertical-align: middle;
+  width: 100px;
+}
