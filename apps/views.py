@@ -11,52 +11,76 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 def index():
+    """メインページを表示します。
+
+    Returns:
+        - template: メインページのテンプレート。
+    """
     return render_template("index.html", current_user=current_user)
 
 
 @main.route("/log_weight", methods=["GET", "POST"])
 @login_required
 def log_weight():
-    today = date.today()
+    """
+    体重および体脂肪率を記録または更新するページ。
+
+    Returns:
+        - template: 体重・体脂肪率のログ入力フォームを含むページのテンプレート。
+    """
     user_id = current_user.id
-    existing_log = BodyComposition.query.filter_by(date=today, user_id=user_id).first()
+    form = LogWeightForm()
 
-    if existing_log:
-        form = LogWeightForm(
-            date=existing_log.date,
-            weight=existing_log.weight,
-            body_fat=existing_log.body_fat,
-        )
-    else:
-        form = LogWeightForm()
-
+    # フォーム入力時処理
     if form.validate_on_submit():
         log_date = form.date.data
         weight = form.weight.data
         body_fat = form.body_fat.data
 
-        existing_log = BodyComposition.query.filter_by(
-            date=log_date, user_id=user_id
+        specified_date_log = BodyComposition.query.filter_by(
+            date=form.date.data, user_id=user_id
         ).first()
 
-        if existing_log:
-            existing_log.weight = weight
-            existing_log.body_fat = body_fat
+        if specified_date_log:
+            specified_date_log.weight = weight
+            specified_date_log.body_fat = body_fat
         else:
             log = BodyComposition(
                 date=log_date, weight=weight, body_fat=body_fat, user_id=user_id
             )
-            db.session.merge(log)
+            db.session.add(log)
 
         db.session.commit()
-
         return redirect(url_for("main.index"))
 
-    return render_template("log_weight.html", form=form, today=today)
+    # フォーム初期値設定
+    today = date.today()
+    todays_log = BodyComposition.query.filter_by(date=today, user_id=user_id).first()
+
+    if todays_log:
+        form.weight.data = todays_log.weight
+        form.body_fat.data = todays_log.body_fat
+    else:
+        last_registered_log = (
+            BodyComposition.query.filter_by(user_id=user_id)
+            .order_by(BodyComposition.date.desc())
+            .first()
+        )
+        if last_registered_log:
+            form.weight.data = last_registered_log.weight
+            form.body_fat.data = last_registered_log.body_fat
+
+    return render_template("log_weight.html", form=form)
 
 
 @main.route("/signup", methods=["GET", "POST"])
 def signup():
+    """
+    新規ユーザー登録のページ。
+
+    Returns:
+        - template: ユーザー登録フォームを含むページのテンプレート。
+    """
     form = SignupForm()
 
     if form.validate_on_submit():
@@ -70,15 +94,15 @@ def signup():
         existing_email = User.query.filter_by(email=email).first()
 
         if existing_user:
-            flash("このユーザー名は既に登録されています", "error")
+            flash("このユーザー名は既に登録されています。", "error")
         elif existing_email:
-            flash("このメールアドレスは既に登録されています", "error")
+            flash("このメールアドレスは既に登録されています。", "error")
         else:
             user = User(username=username, email=email, password=password)
             db.session.add(user)
             db.session.commit()
 
-            flash("アカウントが作成されました", "success")
+            flash("アカウントが作成されました。", "success")
             return redirect(url_for("main.index"))
 
     return render_template("signup.html", form=form, current_user=current_user)
@@ -86,6 +110,12 @@ def signup():
 
 @main.route("/signin", methods=["GET", "POST"])
 def signin():
+    """
+    ユーザーログインページ。
+
+    Returns:
+        - template: ログインフォームを含むページのテンプレート。
+    """
     form = SigninForm()
 
     if form.validate_on_submit():
@@ -96,7 +126,7 @@ def signin():
 
         if user and user.check_password(password):
             login_user(user)
-            flash("ログインに成功しました", "success")
+            flash("ログインに成功しました。", "success")
             return redirect(url_for("main.index"))
         else:
             flash("ログインに失敗しました。ユーザー名またはパスワードが間違っています", "error")
@@ -108,4 +138,11 @@ def signin():
 @login_required
 def logout():
     logout_user()
+    """
+    ユーザーログアウトのエンドポイント。ログアウト後、メインページにリダイレクトします。
+    
+    Returns:
+        - redirect: メインページへのリダイレクトオブジェクト。
+    """
+    flash("ログアウトに成功しました。ご利用ありがとうございました。", "success")
     return redirect(url_for("main.index"))
