@@ -1,9 +1,7 @@
-from dash import Dash
 from flask import Flask, g, render_template
 from flask_login import LoginManager, current_user
 
 from .config import config
-from .dash_app import init_dash
 from .models import User, db
 
 
@@ -50,13 +48,6 @@ def create_app(config_key):
     def before_request():
         """各リクエスト前に実行される関数。現在のユーザーをglobalオブジェクトに保存します。"""
         g.user = current_user
-
-    app_dash = Dash(
-        server=app,
-        url_base_pathname="/dash/",
-        external_stylesheets=["/static/dash_style.css"],
-    )
-    init_dash(app_dash)
 
     return app
 

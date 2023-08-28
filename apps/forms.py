@@ -9,33 +9,78 @@ from wtforms import (
     SubmitField,
     validators,
 )
-from wtforms.validators import DataRequired, Email, EqualTo, NumberRange
+from wtforms.validators import (
+    DataRequired,
+    Email,
+    EqualTo,
+    NumberRange,
+    Optional,
+    ValidationError,
+)
 
 
-class LogWeightForm(FlaskForm):
+class BaseLogWeightForm(FlaskForm):
+    """
+    体重と体脂肪率の記録のためのベースフォーム。
+
+    Fields:
+    - date: 日付を入力するフィールド。デフォルトは今日の日付。未来の日付は許可されていない。
+    - weight: 体重を入力するフィールド。0.1〜999.9の範囲。
+    - body_fat: 体脂肪率を入力するフィールド。0〜99.9%の範囲。
+    """
+
+    def validate_not_future_date(form, field):
+        """
+        日付フィールドが未来の日付でないことを確認するカスタムバリデータ。
+
+        Parameters:
+        - form: バリデーションを行っているフォームのインスタンス。
+        - field: バリデーションを行っているフィールドのインスタンス。
+
+        Raises:
+        - ValidationError: フィールドのデータが今日の日付よりも未来の場合。
+        """
+        if field.data > date.today():
+            raise ValidationError("未来の日付は許可されていません。")
+
+    today = date.today().isoformat()
+
+    date = DateField(
+        "日付",
+        validators=[DataRequired(), validate_not_future_date],
+        default=date.today,
+        render_kw={"max": today},
+    )
+    weight = FloatField(
+        "体重 (kg)",
+        validators=[
+            DataRequired(message="体重 (kg) には正の整数、または正の浮動小数点数を入力してください。"),
+            NumberRange(min=0.1, max=999.9),
+        ],
+    )
+    body_fat = FloatField(
+        "体脂肪率 (%)", validators=[Optional(), NumberRange(min=0.1, max=99.9)]
+    )
+
+
+class LogWeightForm(BaseLogWeightForm):
     """
     体重と体脂肪率の記録フォーム。
 
     Fields:
-    - date: 日付を入力するフィールド。デフォルトは今日の日付。
-    - weight: 体重を入力するフィールド。0.1〜999.9の範囲。
-    - body_fat: 体脂肪率を入力するフィールド。0〜99.9%の範囲。
+    Inherits fields from BaseLogWeightForm.
     - submit: フォームを送信するボタン。
     """
 
-    date = DateField("日付", validators=[DataRequired()], default=date.today)
-    weight = FloatField(
-        "体重(kg)", validators=[DataRequired(), NumberRange(min=0.1, max=999.9)]
-    )
-    body_fat = FloatField("体脂肪率(%)", validators=[NumberRange(min=0, max=99.9)])
     submit = SubmitField("記録")
 
 
-class SignupForm(FlaskForm):
+class SignupForm(BaseLogWeightForm):
     """
     新規ユーザー登録フォーム。
 
     Fields:
+    Inherits fields from BaseLogWeightForm.
     - username: ユーザー名を入力するフィールド。
     - email: Eメールアドレスを入力するフィールド。正しいEメール形式である必要がある。
     - password: パスワードを入力するフィールド。

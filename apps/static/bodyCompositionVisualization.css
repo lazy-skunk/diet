@@ -1,0 +1,15 @@
+#body-composition-table th, 
+#body-composition-table td {
+    border: 1px solid #dddddd;
+    padding: 5px;
+    text-align: left;
+}
+
+#body-composition-table {
+    border-collapse: collapse;
+    width: 50%;
+}
+
+.graph-container {
+  position: relative;
+}

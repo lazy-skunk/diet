@@ -1,22 +1,25 @@
 {% extends 'base.html' %} {% block title %} 新規登録 - Diet App {% endblock %}
-{% block content %} {% if form.confirm_password.errors %}
-<ul>
-  {% for error in form.confirm_password.errors %}
-  <li>{{ error }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
+{% block content %}
+
 <h1>新規登録</h1>
+
 <form method="POST" action="/signup">
   {{ form.hidden_tag() }}
   <div>{{ form.username.label }} {{ form.username }}</div>
   <div>{{ form.email.label }} {{ form.email }}</div>
   <div>{{ form.password.label }} {{ form.password }}</div>
   <div>{{ form.confirm_password.label }} {{ form.confirm_password }}</div>
+  <br />
+  <div>{{ form.date.label }} {{ form.date }}</div>
+  <div>{{ form.weight.label }} {{ form.weight }}</div>
+  <div>{{ form.body_fat.label }} {{ form.body_fat }}</div>
+
   <div>{{ form.submit }}</div>
 </form>
+
 <p>
   アカウントをお持ちの方は、<a href="{{ url_for('main.signin') }}">こちら</a
   >からログインしてください。
 </p>
+
 {% endblock %}

@@ -5,8 +5,9 @@
     <title>{% block title %}{% endblock %}</title>
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='flask_style.css') }}"
+      href="{{ url_for('static', filename='style.css') }}"
     />
+    {% block additional_styles %}{% endblock %}
   </head>
   <body>
     <header>
@@ -25,16 +26,24 @@
       </nav>
     </header>
     <main>
-      {% with messages = get_flashed_messages() %} {% if messages %}
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
       <ul class="flash-messages">
         {% for message in messages %}
-        <li class="flash-message">{{ message }}</li>
+        <li class="alert alert-{{ category }}">{{ message }}</li>
         {% endfor %}
       </ul>
-      {% endif %} {% endwith %}{% block content %}{% endblock %}
+      {% endif %} {% endwith %}{% if form and form.errors %}
+      <ul class="form-errors">
+        {% for field_name, errors in form.errors.items() %} {% for error in
+        errors %}
+        <li class="form-errors">{{ error }}</li>
+        {% endfor %} {% endfor %}
+      </ul>
+      {% endif %} {% block content %}{% endblock %}
     </main>
     <footer>
-      <p>&copy; 2023 Homomo</p>
+      <div>&copy; 2023 Homomo</div>
     </footer>
   </body>
 </html>

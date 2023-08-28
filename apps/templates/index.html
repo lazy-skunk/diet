@@ -1,4 +1,34 @@
 {% extends 'base.html' %} {% block title %} Diet App {% endblock %} {% block
-content %}
-<iframe src="/dash/"></iframe>
+additional_styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='bodyCompositionVisualization.css') }}"
+/>
+{% endblock %} {% block content %} {% if not current_user.is_authenticated %}
+<p>サンプルデータを表示しています。</p>
+{% endif %}
+
+<div class="controls">
+  <label id="duration-label" for="duration-dropdown">表示期間</label>
+  <select id="duration-dropdown">
+    <option value="7">1週間</option>
+    <option value="30" selected>1か月</option>
+    <option value="90">3か月</option>
+    <option value="180">半年</option>
+    <option value="365">1年</option>
+    <option value="all">全期間</option>
+  </select>
+</div>
+
+<div class="graph-container">
+  <canvas id="bodyCompositionGraph"></canvas>
+</div>
+
+<div class="table-container">
+  <table id="body-composition-table"></table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='bodyCompositionVisualization.js') }}"></script>
+
 {% endblock %}
