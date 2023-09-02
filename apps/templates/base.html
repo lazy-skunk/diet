@@ -1,49 +1,101 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}{% endblock %}</title>
     <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
+      integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+      crossorigin="anonymous"
     />
-    {% block additional_styles %}{% endblock %}
   </head>
+
   <body>
-    <header>
-      <h1>Diet</h1>
-      <nav>
-        <a href="{{ url_for('main.index') }}">ホーム</a>
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('main.log_weight') }}">体重記録</a>
-        <a href="#">筋トレ記録</a>
-        <a href="#">称号</a>
-        <a href="{{ url_for('main.logout') }}">ログアウト</a>
-        {% else %}
-        <a href="{{ url_for('main.signup') }}">新規利用者登録(無料)</a>
-        <a href="{{ url_for('main.signin') }}">ログイン</a>
-        {% endif %}
-      </nav>
+    <header class="navbar navbar-expand-md navbar-dark bg-primary">
+      <a class="navbar-brand" href="{{ url_for('main.index') }}">Diet</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          {% if current_user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link px-2" href="{{ url_for('main.index') }}"
+              >ホーム</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link px-2"
+              href="{{ url_for('main.log_body_composition') }}"
+              >体重記録</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-2" href="#">筋トレ記録</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-2" href="#">称号</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-2" href="{{ url_for('main.logout') }}"
+              >ログアウト</a
+            >
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link px-2" href="{{ url_for('main.signup') }}"
+              >新規利用者登録(無料)</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-2" href="{{ url_for('main.signin') }}"
+              >ログイン</a
+            >
+          </li>
+          {% endif %}
+        </ul>
+      </div>
     </header>
-    <main>
+
+    <main class="container">
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
       messages %}
-      <ul class="flash-messages">
-        {% for message in messages %}
-        <li class="alert alert-{{ category }}">{{ message }}</li>
+      <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
         {% endfor %}
-      </ul>
+      </div>
       {% endif %} {% endwith %}{% if form and form.errors %}
-      <ul class="form-errors">
+      <div class="form-errors">
         {% for field_name, errors in form.errors.items() %} {% for error in
         errors %}
-        <li class="form-errors">{{ error }}</li>
+        <div class="alert alert-danger">{{ error }}</div>
         {% endfor %} {% endfor %}
-      </ul>
-      {% endif %} {% block content %}{% endblock %}
+      </div>
+      {% endif %} {% block content %} {% endblock %}
     </main>
-    <footer>
+
+    <footer class="bg-dark text-light text-center py-3">
       <div>&copy; 2023 Homomo</div>
     </footer>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='bodyCompositionVisualization.js') }}"></script>
   </body>
 </html>

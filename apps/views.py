@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from flask import Blueprint, flash, jsonify, redirect, render_template, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
-from .forms import LogWeightForm, SigninForm, SignupForm
+from .forms import LogBodyCompositionForm, SigninForm, SignupForm
 from .models import BodyComposition, User, db
 
 main = Blueprint("main", __name__)
@@ -12,16 +12,14 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 def index():
-    """メインページを表示します。"""
     return render_template("index.html", current_user=current_user)
 
 
-@main.route("/log_weight", methods=["GET", "POST"])
+@main.route("/log_body_composition", methods=["GET", "POST"])
 @login_required
-def log_weight():
-    """ユーザーの体重と体脂肪率を登録または更新します。"""
+def log_body_composition():
     user_id = current_user.id
-    form = LogWeightForm()
+    form = LogBodyCompositionForm()
 
     # フォーム入力時処理
     if form.validate_on_submit():
@@ -45,7 +43,7 @@ def log_weight():
             except Exception as e:
                 flash(f"{str(e)}", "danger")
                 return render_template(
-                    "log_weight.html",
+                    "log_body_composition.html",
                     form=form,
                 )
 
@@ -55,7 +53,7 @@ def log_weight():
         except Exception as e:
             db.session.rollback()
             flash(f"予期せぬエラーが発生しました。: {str(e)}", "danger")
-            return render_template("log_weight.html", form=form)
+            return render_template("log_body_composition.html", form=form)
 
     # フォーム初期値設定
     today = date.today()
@@ -74,12 +72,11 @@ def log_weight():
             form.weight.data = last_registered_log.weight
             form.body_fat.data = last_registered_log.body_fat
 
-    return render_template("log_weight.html", form=form)
+    return render_template("log_body_composition.html", form=form)
 
 
 @main.route("/signup", methods=["GET", "POST"])
 def signup():
-    """新規ユーザーを登録します。"""
     form = SignupForm()
 
     if form.validate_on_submit():
@@ -94,9 +91,9 @@ def signup():
         existing_email = User.query.filter_by(email=email).first()
 
         if existing_user:
-            flash("このユーザー名は既に登録されています。", "error")
+            flash("別のユーザー名を入力してください。このユーザー名は既に登録されています。", "danger")
         elif existing_email:
-            flash("このメールアドレスは既に登録されています。", "error")
+            flash("別のメールアドレスを入力してください。このメールアドレスは既に登録されています。", "danger")
         else:
             user = User(username=username, email=email, password=password)
             db.session.add(user)
@@ -109,7 +106,7 @@ def signup():
             db.session.commit()
 
             login_user(user)
-            flash("アカウントが作成し、体重が登録されました。", "success")
+            flash("アカウントが作成され、体重が登録されました。", "success")
             return redirect(url_for("main.index"))
 
     return render_template("signup.html", form=form, current_user=current_user)
@@ -117,7 +114,6 @@ def signup():
 
 @main.route("/signin", methods=["GET", "POST"])
 def signin():
-    """ユーザーログインページ。"""
     form = SigninForm()
 
     if form.validate_on_submit():
@@ -131,7 +127,7 @@ def signin():
             flash("ログインに成功しました。", "success")
             return redirect(url_for("main.index"))
         else:
-            flash("ログインに失敗しました。ユーザー名またはパスワードが間違っています", "error")
+            flash("ログインに失敗しました。ユーザー名またはパスワードが誤っています。", "danger")
 
     return render_template("signin.html", form=form, current_user=current_user)
 
@@ -139,7 +135,6 @@ def signin():
 @main.route("/logout")
 @login_required
 def logout():
-    """ユーザーログアウトのエンドポイント。ログアウト後、メインページにリダイレクトします。"""
     logout_user()
     flash("ログアウトに成功しました。ご利用ありがとうございました。", "success")
     return redirect(url_for("main.index"))
@@ -147,12 +142,6 @@ def logout():
 
 @main.route("/get_body_composition_data", methods=["GET"])
 def fetch_body_composition_data():
-    """
-    指定されたユーザーの体重および体脂肪率のデータを取得します。認証されていないユーザーに対しては、ダミーデータを返します。
-
-    Returns:
-        jsonify: ユーザーの体重、体脂肪率、および日付データをJSON形式で返します。
-    """
     if current_user.is_authenticated:
         user_id = current_user.id
         weight_data, body_fat_data, dates = get_body_composition_data(user_id)
@@ -165,18 +154,6 @@ def fetch_body_composition_data():
 
 
 def get_body_composition_data(user_id):
-    """
-    指定されたユーザーIDに関連する体重と体脂肪率のデータを取得します。
-
-    Args:
-        user_id (int): 認証されたユーザーのID。
-
-    Returns:
-        Tuple[List[float], List[float], List[str]]: 3つのリストのタプルとして、
-                                                   1. ユーザーの体重データのリスト
-                                                   2. ユーザーの体脂肪率データのリスト
-                                                   3. 対応する日付データのリスト
-    """
     weight_data = []
     body_fat_data = []
     dates = []
@@ -196,15 +173,6 @@ def get_body_composition_data(user_id):
 
 
 def generate_dummy_data():
-    """
-    ダミーデータを生成します。特にユーザーが認証されていない場合やデモ目的で使用されます。
-
-    Returns:
-        Tuple[List[str], List[float], List[str]]: 3つのリストのタプルとして、
-                                                 1. 日付データのリスト
-                                                 2. ダミーの体重データのリスト
-                                                 3. ダミーの体脂肪率データのリスト
-    """
     duration = 365 * 1.5
     today = datetime.now()
     dummy_date = today - timedelta(days=int(duration))

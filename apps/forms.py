@@ -9,6 +9,7 @@ from wtforms import (
     SubmitField,
     validators,
 )
+from wtforms.fields import FloatField
 from wtforms.validators import (
     DataRequired,
     Email,
@@ -19,95 +20,81 @@ from wtforms.validators import (
 )
 
 
-class BaseLogWeightForm(FlaskForm):
+class CustomBodyFatFloatField(FloatField):
     """
-    体重と体脂肪率の記録のためのベースフォーム。
-
-    Fields:
-    - date: 日付を入力するフィールド。デフォルトは今日の日付。未来の日付は許可されていない。
-    - weight: 体重を入力するフィールド。0.1〜999.9の範囲。
-    - body_fat: 体脂肪率を入力するフィールド。0〜99.9%の範囲。
+    カスタムバリデーターを実装しても、デフォルトエラーメッセージが出力され、カスタムエラーメッセージは表示されなかった。
+    この問題を解消するために、FloatField の設定を変更したクラスを作成した。
     """
 
+    def process_formdata(self, valuelist):
+        if valuelist:
+            try:
+                self.data = float(valuelist[0])
+            except ValueError:
+                self.data = None
+                raise ValidationError("体脂肪率には正の整数、または正の浮動小数点数を入力してください。")
+
+
+class BaseLogBodyCompositionForm(FlaskForm):
     def validate_not_future_date(form, field):
-        """
-        日付フィールドが未来の日付でないことを確認するカスタムバリデータ。
-
-        Parameters:
-        - form: バリデーションを行っているフォームのインスタンス。
-        - field: バリデーションを行っているフィールドのインスタンス。
-
-        Raises:
-        - ValidationError: フィールドのデータが今日の日付よりも未来の場合。
-        """
         if field.data > date.today():
-            raise ValidationError("未来の日付は許可されていません。")
+            raise ValidationError("今日以前の日付を選択してください。")
 
     today = date.today().isoformat()
 
     date = DateField(
-        "日付",
-        validators=[DataRequired(), validate_not_future_date],
+        label="日付",
+        validators=[DataRequired(message="日付を入力してください。"), validate_not_future_date],
         default=date.today,
         render_kw={"max": today},
     )
+
     weight = FloatField(
-        "体重 (kg)",
+        label="体重 (kg)",
         validators=[
-            DataRequired(message="体重 (kg) には正の整数、または正の浮動小数点数を入力してください。"),
-            NumberRange(min=0.1, max=999.9),
+            DataRequired(message="体重を入力してください。"),
+            NumberRange(min=0.1, max=999.9, message="体重は 0.1 から 999.9 の間で入力してください。"),
         ],
     )
-    body_fat = FloatField(
-        "体脂肪率 (%)", validators=[Optional(), NumberRange(min=0.1, max=99.9)]
+
+    body_fat = CustomBodyFatFloatField(
+        label="体脂肪率 (%)",
+        validators=[
+            Optional(),
+            NumberRange(min=0, max=99.9, message="体脂肪率は 0 から 99.9 の間で入力してください。"),
+        ],
     )
 
 
-class LogWeightForm(BaseLogWeightForm):
-    """
-    体重と体脂肪率の記録フォーム。
-
-    Fields:
-    Inherits fields from BaseLogWeightForm.
-    - submit: フォームを送信するボタン。
-    """
-
+class LogBodyCompositionForm(BaseLogBodyCompositionForm):
     submit = SubmitField("記録")
 
 
-class SignupForm(BaseLogWeightForm):
-    """
-    新規ユーザー登録フォーム。
-
-    Fields:
-    Inherits fields from BaseLogWeightForm.
-    - username: ユーザー名を入力するフィールド。
-    - email: Eメールアドレスを入力するフィールド。正しいEメール形式である必要がある。
-    - password: パスワードを入力するフィールド。
-    - confirm_password: 確認用のパスワードを入力するフィールド。passwordフィールドと一致している必要がある。
-    - submit: フォームを送信するボタン。
-    """
-
-    username = StringField("ユーザー名", validators=[DataRequired()])
-    email = StringField("Eメール", validators=[DataRequired(), Email()])
-    password = PasswordField("パスワード", validators=[DataRequired()])
+class SignupForm(BaseLogBodyCompositionForm):
+    username = StringField(
+        label="ユーザー名", validators=[DataRequired(message="ユーザー名を入力してください。")]
+    )
+    email = StringField(
+        label="Eメール", validators=[DataRequired(message="Eメールアドレスを入力してください。"), Email()]
+    )
+    password = PasswordField(
+        label="パスワード", validators=[DataRequired(message="パスワードを入力してください。")]
+    )
     confirm_password = PasswordField(
-        "パスワード(確認用)",
-        validators=[DataRequired(), EqualTo("password", message="パスワードが一致しません。")],
+        label="パスワード (確認用)",
+        validators=[
+            DataRequired(message="パスワード (確認用) を入力してください。"),
+            EqualTo("password", message="パスワードとパスワード (確認用) には同一の値を入力してください。"),
+        ],
     )
     submit = SubmitField("登録")
 
 
 class SigninForm(FlaskForm):
-    """
-    ログインフォーム。
-
-    Fields:
-    - username: ユーザー名を入力するフィールド。
-    - password: パスワードを入力するフィールド。
-    - submit: フォームを送信するボタン。
-    """
-
-    username = StringField("ユーザー名", validators=[DataRequired()])
-    password = PasswordField("パスワード", validators=[DataRequired()])
+    username = StringField(
+        label="ユーザー名", validators=[DataRequired(message="ユーザー名を入力してください。")]
+    )
+    password = PasswordField(
+        label="パスワード", validators=[DataRequired(message="パスワードを入力してください。")]
+    )
     submit = SubmitField("ログイン")

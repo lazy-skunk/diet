@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% block title %} 体重記録 - My Flask App {% endblock
 %} {% block content %}
 <h1>体重記録</h1>
-<form method="POST" action="{{ url_for('main.log_weight') }}">
+<form method="POST" action="{{ url_for('main.log_body_composition') }}">
   {{ form.hidden_tag() }}
   <div>{{ form.date.label }} {{ form.date }}</div>
   <div>{{ form.weight.label }} {{ form.weight }}</div>
