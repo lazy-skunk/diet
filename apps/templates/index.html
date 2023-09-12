@@ -5,6 +5,18 @@ content %} {% if not current_user.is_authenticated %}
 
 <div class="row align-items-center">
   <div class="col-auto">
+    <label for="granularity-dropdown" class="form-label">データ表示粒度</label>
+  </div>
+  <div class="col-auto">
+    <select class="form-select" id="granularity-dropdown">
+      <option value="daily" selected>日別</option>
+      <option value="monthly">月別</option>
+    </select>
+  </div>
+</div>
+
+<div class="row align-items-center">
+  <div class="col-auto">
     <label for="duration-dropdown" class="form-label">データ表示期間</label>
   </div>
   <div class="col-auto">
@@ -14,7 +26,7 @@ content %} {% if not current_user.is_authenticated %}
       <option value="90">3か月</option>
       <option value="180">半年</option>
       <option value="365">1年</option>
-      <option value="all">全期間</option>
+      <option value="1095">3年</option>
     </select>
   </div>
 </div>
