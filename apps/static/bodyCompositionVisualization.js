@@ -13,7 +13,11 @@ let chartInstance = null;
 
 async function initializePage() {
   await fetchData();
-  createGraph(dailyData.date, dailyData.weight, dailyData.bodyFat);
+  const durationValue = parseInt(document.getElementById("duration-dropdown").value);
+  console.log(durationValue)
+  const filteredData = filterDataByDuration(dailyData, durationValue);
+  console.log(filteredData)
+  createGraph(filteredData);
 };
 
 async function fetchData() {
@@ -32,16 +36,16 @@ async function fetchData() {
   monthlyData.weightChangeRate = monthlyDataSet.map(item => item.weight_change_rate);
 }
 
-function createGraph(date, weight, bodyFat) {
+function createGraph(data) {
   const ctx = document.getElementById("bodyCompositionGraph").getContext("2d");
   chartInstance = new Chart(ctx, {
     type: "line",
     data: {
-      labels: date,
+      labels: data.date,
       datasets: [
         {
           label: "体重",
-          data: weight,
+          data: data.weight,
           yAxisID: "y",
           spanGaps: true,
           pointRadius: 0,
@@ -49,7 +53,7 @@ function createGraph(date, weight, bodyFat) {
         },
         {
           label: "体脂肪率",
-          data: bodyFat,
+          data: data.bodyFat,
           yAxisID: "y1",
           spanGaps: true,
           pointRadius: 0,
@@ -99,33 +103,26 @@ function createGraph(date, weight, bodyFat) {
 
 window.onload = initializePage();
 
-function updateGraph(date, weight, bodyFat) {
-  chartInstance.data.labels = date;
-  chartInstance.data.datasets[0].data = weight;
-  chartInstance.data.datasets[1].data = bodyFat;
+function updateGraph(data) {
+  chartInstance.data.labels = data.date;
+  chartInstance.data.datasets[0].data = data.weight;
+  chartInstance.data.datasets[1].data = data.bodyFat;
   chartInstance.update();
 }
 
-//ここから下は作成していく。
+// ここから下は作成していく。
 function filterDataByDuration(data, days) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
 
+  const filteredIndices = data.date.map((d, index) => (new Date(d) >= cutoffDate) ? index : -1).filter(index => index !== -1);
+
   return {
-    date: data.date.filter(d => new Date(d) >= cutoffDate),
-    weight: data.weight.slice(-days),
-    bodyFat: data.bodyFat.slice(-days)
+    date: filteredIndices.map(index => data.date[index]),
+    weight: filteredIndices.map(index => data.weight[index]),
+    bodyFat: filteredIndices.map(index => data.bodyFat[index])
   };
 }
-
-function updateDataDisplay(granularity) {
-  if (granularity === "daily") {
-    updateGraph(dailyData.date, dailyData.weight, dailyData.bodyFat);
-  } else if (granularity === "monthly") {
-    updateGraph(monthlyData.date, monthlyData.weight, monthlyData.bodyFat);
-  }
-}
-
 
 
 // 表示粒度を変更した場合の処理
@@ -155,7 +152,7 @@ document.getElementById("granularity-dropdown").addEventListener("change", funct
   const durationValue = parseInt(durationDropdown.value);
 
   const filteredData = filterDataByDuration(allData, durationValue);
-  updateDataDisplay(granularity, filteredData);
+  updateGraph(filteredData);
 });
 
 // 表示期間を変更した場合の処理
@@ -166,8 +163,7 @@ document.getElementById("duration-dropdown").addEventListener("change", function
 
   const filteredData = filterDataByDuration(targetData, durationValue);
 
-  console.log(filteredData)
-  updateDataDisplay(granularityValue, filteredData);
+  updateGraph(filteredData);
 });
 
 
