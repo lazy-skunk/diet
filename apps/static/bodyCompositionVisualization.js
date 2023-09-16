@@ -11,16 +11,7 @@ let monthlyData = {
 };
 let chartInstance = null;
 
-async function initializePage() {
-  await fetchData();
-  const durationValue = parseInt(document.getElementById("duration-dropdown").value);
-  console.log(durationValue)
-  const filteredData = filterDataByDuration(dailyData, durationValue);
-  console.log(filteredData)
-  createGraph(filteredData);
-};
-
-async function fetchData() {
+async function fetchBodyCompositionData() {
   const response = await fetch("/get_body_composition_data");
   const body_composition_data = await response.json();
 
@@ -36,16 +27,16 @@ async function fetchData() {
   monthlyData.weightChangeRate = monthlyDataSet.map(item => item.weight_change_rate);
 }
 
-function createGraph(data) {
+function createGraph(bodyCompositionData) {
   const ctx = document.getElementById("bodyCompositionGraph").getContext("2d");
   chartInstance = new Chart(ctx, {
     type: "line",
     data: {
-      labels: data.date,
+      labels: bodyCompositionData.date,
       datasets: [
         {
           label: "体重",
-          data: data.weight,
+          data: bodyCompositionData.weight,
           yAxisID: "y",
           spanGaps: true,
           pointRadius: 0,
@@ -53,7 +44,7 @@ function createGraph(data) {
         },
         {
           label: "体脂肪率",
-          data: data.bodyFat,
+          data: bodyCompositionData.bodyFat,
           yAxisID: "y1",
           spanGaps: true,
           pointRadius: 0,
@@ -101,6 +92,45 @@ function createGraph(data) {
   });
 }
 
+function updateBodyCompositionTable(data, granularity) {
+  const table = document.getElementById("body-composition-table");
+
+  let weightHeader = granularity === "monthly" ? "平均体重 (kg)" : "体重 (kg)";
+  let bodyFatHeader = granularity === "monthly" ? "平均体脂肪率 (%)" : "体脂肪率 (%)";
+
+  let tableHtml = `
+    <thead>
+      <tr>
+        <th>日付</th>
+        <th>${weightHeader}</th>
+        <th>${bodyFatHeader}</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
+
+  for (let i = 0; i < data.date.length; i++) {
+    tableHtml += `
+      <tr>
+        <td>${data.date[i]}</td>
+        <td>${data.weight[i]}</td>
+        <td>${data.bodyFat[i]}</td>
+      </tr>
+    `;
+  }
+
+  tableHtml += '</tbody>';
+  table.innerHTML = tableHtml;
+}
+
+async function initializePage() {
+  await fetchBodyCompositionData();
+  const durationValue = parseInt(document.getElementById("duration-dropdown").value);
+  const granularityValue = document.getElementById("granularity-dropdown").value;
+  const filteredBodyCompositionData = filterBodyCompositionDataByDuration(dailyData, durationValue);
+  createGraph(filteredBodyCompositionData);
+  updateBodyCompositionTable(filteredBodyCompositionData, granularityValue);
+}
 window.onload = initializePage();
 
 function updateGraph(data) {
@@ -110,24 +140,22 @@ function updateGraph(data) {
   chartInstance.update();
 }
 
-// ここから下は作成していく。
-function filterDataByDuration(data, days) {
+function filterBodyCompositionDataByDuration(BodyCompositionData, days) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
 
-  const filteredIndices = data.date.map((d, index) => (new Date(d) >= cutoffDate) ? index : -1).filter(index => index !== -1);
+  const filteredIndices = BodyCompositionData.date.map((d, index) => (new Date(d) >= cutoffDate) ? index : -1).filter(index => index !== -1);
 
   return {
-    date: filteredIndices.map(index => data.date[index]),
-    weight: filteredIndices.map(index => data.weight[index]),
-    bodyFat: filteredIndices.map(index => data.bodyFat[index])
+    date: filteredIndices.map(index => BodyCompositionData.date[index]),
+    weight: filteredIndices.map(index => BodyCompositionData.weight[index]),
+    bodyFat: filteredIndices.map(index => BodyCompositionData.bodyFat[index])
   };
 }
 
-
-// 表示粒度を変更した場合の処理
-document.getElementById("granularity-dropdown").addEventListener("change", function () {
-  const granularity = this.value;
+// TODO メソッド分けしたいかも。
+function handleGranularityChange() {
+  const granularityValue = this.value;
   let options = [
     { value: "7", label: "1週間" },
     { value: "30", label: "1か月" },
@@ -137,34 +165,39 @@ document.getElementById("granularity-dropdown").addEventListener("change", funct
     { value: "1095", label: "3年" }
   ];
 
-  if (granularity === "monthly") {
+  // 表示粒度に応じて、表示期間のオプションを変更し、その初期値を設定する。
+  let defaultGranularityValue;
+  if (granularityValue === "monthly") {
     options = options.filter(opt => opt.value !== "7");
+    defaultGranularityValue = "365";
+  } else {
+    defaultGranularityValue = "30";
   }
 
-  let defaultSelectedValue = granularity === "monthly" ? "365" : "30";
-
+  // 変更した表示オプションを反映する。
   const durationDropdown = document.getElementById("duration-dropdown");
   durationDropdown.innerHTML = options.map(opt => {
-    let selected = opt.value === defaultSelectedValue ? ' selected' : '';
+    let selected = opt.value === defaultGranularityValue ? ' selected' : '';
     return `<option value="${opt.value}"${selected}>${opt.label}</option>`;
   }).join('');
 
+  // 表示粒度に応じて、グラフを更新する。
   const durationValue = parseInt(durationDropdown.value);
-
-  const filteredData = filterDataByDuration(allData, durationValue);
+  const targetData = granularityValue === "daily" ? dailyData : monthlyData;
+  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue);
   updateGraph(filteredData);
-});
+}
+document.getElementById("granularity-dropdown").addEventListener("change", handleGranularityChange);
 
-// 表示期間を変更した場合の処理
-document.getElementById("duration-dropdown").addEventListener("change", function () {
+// TODO メソッド名を考えないとなあ。
+function handleDurationChange() {
   const granularityValue = document.getElementById("granularity-dropdown").value;
   const durationValue = parseInt(this.value);
   const targetData = granularityValue === "daily" ? dailyData : monthlyData;
-
-  const filteredData = filterDataByDuration(targetData, durationValue);
-
+  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue);
   updateGraph(filteredData);
-});
+}
+document.getElementById("duration-dropdown").addEventListener("change", handleDurationChange);
 
 
 
