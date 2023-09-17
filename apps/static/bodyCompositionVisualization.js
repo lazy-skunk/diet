@@ -11,24 +11,27 @@ let monthlyData = {
 };
 let chartInstance = null;
 
-async function fetchBodyCompositionData() {
-  const response = await fetch("/get_body_composition_data");
-  const body_composition_data = await response.json();
+async function fetchApiData(apiEndpoint) {
+  const response = await fetch(apiEndpoint);
+  return await response.json();
+}
 
-  const dailyDataSet = body_composition_data[0];
+function populateDailyData(dailyDataSet) {
   dailyData.date = dailyDataSet.map(item => item.date);
   dailyData.weight = dailyDataSet.map(item => item.weight);
   dailyData.bodyFat = dailyDataSet.map(item => item.body_fat);
+}
 
-  const monthlyDataSet = body_composition_data[1];
+function populateMonthlyData(monthlyDataSet) {
   monthlyData.date = monthlyDataSet.map(item => item.date);
   monthlyData.weight = monthlyDataSet.map(item => item.weight);
   monthlyData.bodyFat = monthlyDataSet.map(item => item.body_fat);
   monthlyData.weightChangeRate = monthlyDataSet.map(item => item.weight_change_rate);
 }
 
-function createGraph(bodyCompositionData) {
+function createBodyCompositionGraph(bodyCompositionData) {
   const ctx = document.getElementById("bodyCompositionGraph").getContext("2d");
+
   chartInstance = new Chart(ctx, {
     type: "line",
     data: {
@@ -39,26 +42,20 @@ function createGraph(bodyCompositionData) {
           data: bodyCompositionData.weight,
           yAxisID: "y",
           spanGaps: true,
-          pointRadius: 0,
-          pointHoverRadius: 0
         },
         {
           label: "体脂肪率",
           data: bodyCompositionData.bodyFat,
           yAxisID: "y1",
           spanGaps: true,
-          pointRadius: 0,
-          pointHoverRadius: 0
         },
       ],
     },
     options: {
-      responsive: true,
       interaction: {
         mode: "index",
         intersect: false,
       },
-      stacked: false,
       plugins: {
         title: {
           display: true,
@@ -67,17 +64,12 @@ function createGraph(bodyCompositionData) {
       },
       scales: {
         y: {
-          type: "linear",
-          display: true,
-          position: "left",
           title: {
             display: true,
             text: "体重 (kg)",
           },
         },
         y1: {
-          type: "linear",
-          display: true,
           position: "right",
           title: {
             display: true,
@@ -92,69 +84,134 @@ function createGraph(bodyCompositionData) {
   });
 }
 
-// 体組成情報のテーブルを更新する関数
-function updateBodyCompositionTable(data, granularity) {
-  const table = document.getElementById("body-composition-table");
+function getHeaders(granularity) {
+  if (granularity === "monthly") {
+    return ["平均体重 (kg)", "平均体脂肪率 (%)"];
+  } else if (granularity === "daily") {
+    return ["体重 (kg)", "体脂肪率 (%)"];
+  }
+}
 
-  let weightHeader = granularity === "monthly" ? "平均体重 (kg)" : "体重 (kg)";
-  let bodyFatHeader = granularity === "monthly" ? "平均体脂肪率 (%)" : "体脂肪率 (%)";
-
-  const sortedIndices = data.date.map((date, index) => index).sort((a, b) => new Date(data.date[b]) - new Date(data.date[a]));
-
+function createTableHeader(weightHeader, bodyFatHeader, granularity) {
   let tableHtml = `
     <thead>
       <tr>
         <th>日付</th>
         <th>${weightHeader}</th>
         <th>${bodyFatHeader}</th>
-      </tr>
-    </thead>
-    <tbody>
   `;
+  if (granularity === "monthly") {
+    tableHtml += `<th>先月比の変化率 (%)</th>`;
+  }
+  tableHtml += `</tr></thead>`;
+  return tableHtml;
+}
 
+function sortIndicesByDateDesc(dates) {
+  const dateObjects = dates.map(date => new Date(date));
+  return dateObjects.map((_, index) => index).sort((a, b) => dateObjects[b] - dateObjects[a]);
+}
+
+function createTableData(bodyCompositionData, sortedIndices, granularity) {
+  let tableHtml = '<tbody>';
   for (const i of sortedIndices) {
     tableHtml += `
       <tr>
-        <td>${data.date[i]}</td>
-        <td>${data.weight[i]}</td>
-        <td>${data.bodyFat[i]}</td>
-      </tr>
+        <td>${bodyCompositionData.date[i]}</td>
+        <td>${bodyCompositionData.weight[i]}</td>
+        <td>${bodyCompositionData.bodyFat[i]}</td>
     `;
+    if (granularity === "monthly") {
+      tableHtml += `<td>${bodyCompositionData.weightChangeRate[i]}</td>`;
+    }
+    tableHtml += `</tr>`;
   }
-
   tableHtml += '</tbody>';
-  table.innerHTML = tableHtml;
+  return tableHtml;
+}
+
+function updateBodyCompositionTable(bodyCompositionData, granularity) {
+  const table = document.getElementById("body-composition-table");
+  const [weightHeader, bodyFatHeader] = getHeaders(granularity);
+  const tableHeaderHtml = createTableHeader(weightHeader, bodyFatHeader, granularity);
+  const sortedIndicesDesc = sortIndicesByDateDesc(bodyCompositionData.date);
+  const tableDataHtml = createTableData(bodyCompositionData, sortedIndicesDesc, granularity);
+  table.innerHTML = tableHeaderHtml + tableDataHtml;
 }
 
 
 async function initializePage() {
-  await fetchBodyCompositionData();
+  const body_composition_data = await fetchApiData("/get_body_composition_data");
+  populateDailyData(body_composition_data[0]);
+  populateMonthlyData(body_composition_data[1]);
+
   const durationValue = parseInt(document.getElementById("duration-dropdown").value);
   const granularityValue = document.getElementById("granularity-dropdown").value;
   const filteredBodyCompositionData = filterBodyCompositionDataByDuration(dailyData, durationValue);
-  createGraph(filteredBodyCompositionData);
+  createBodyCompositionGraph(filteredBodyCompositionData);
   updateBodyCompositionTable(filteredBodyCompositionData, granularityValue);
 }
 window.onload = initializePage();
 
-function updateGraph(data) {
-  chartInstance.data.labels = data.date;
-  chartInstance.data.datasets[0].data = data.weight;
-  chartInstance.data.datasets[1].data = data.bodyFat;
+function handleGranularityChange() {
+  const granularityValue = this.value;
+  const durationValue = parseInt(document.getElementById("duration-dropdown").value);
+
+  let targetData;
+  if (granularityValue === "daily") {
+    targetData = dailyData;
+  } else if (granularityValue === "monthly") {
+    targetData = monthlyData;
+  }
+  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue);
+
+  updateBodyCompositionGraph(filteredData, granularityValue);
+  updateBodyCompositionTable(filteredData, granularityValue);
+}
+
+function getLabelsByGranularity(granularity) {
+  if (granularity === "monthly") {
+    return { weightLabel: "平均体重", bodyFatLabel: "平均体脂肪率" };
+  } else if (granularity === "daily") {
+    return { weightLabel: "体重", bodyFatLabel: "体脂肪率" };
+  }
+}
+
+function updateGraphLabels(chartInstance, weightLabel, bodyFatLabel) {
+  chartInstance.data.datasets[0].label = weightLabel;
+  chartInstance.data.datasets[1].label = bodyFatLabel;
+}
+
+function updateGraphData(chartInstance, bodyCompositionData) {
+  chartInstance.data.labels = bodyCompositionData.date;
+  chartInstance.data.datasets[0].data = bodyCompositionData.weight;
+  chartInstance.data.datasets[1].data = bodyCompositionData.bodyFat;
+}
+
+function updateBodyCompositionGraph(bodyCompositionData, granularity) {
+  const { weightLabel, bodyFatLabel } = getLabelsByGranularity(granularity);
+  updateGraphLabels(chartInstance, weightLabel, bodyFatLabel);
+  updateGraphData(chartInstance, bodyCompositionData);
   chartInstance.update();
 }
 
-function filterBodyCompositionDataByDuration(BodyCompositionData, days) {
+
+function filterBodyCompositionDataByDuration(BodyCompositionData, days, granularity) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
 
   const filteredIndices = BodyCompositionData.date.map((d, index) => (new Date(d) >= cutoffDate) ? index : -1).filter(index => index !== -1);
 
-  return {
+  const filteredData = {
     date: filteredIndices.map(index => BodyCompositionData.date[index]),
     weight: filteredIndices.map(index => BodyCompositionData.weight[index]),
     bodyFat: filteredIndices.map(index => BodyCompositionData.bodyFat[index])
   };
+
+  if (granularity === "monthly") {
+    filteredData.weightChangeRate = filteredIndices.map(index => BodyCompositionData.weightChangeRate[index]);
+  }
+  return filteredData;
 }
 
 // TODO メソッド分けしたいかも。
@@ -188,10 +245,10 @@ function handleGranularityChange() {
   // 表示粒度に応じて、グラフを更新する。
   const durationValue = parseInt(document.getElementById("duration-dropdown").value);
   const targetData = granularityValue === "daily" ? dailyData : monthlyData;
-  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue);
+  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue, granularityValue);
 
   // グラフとテーブルを更新
-  updateGraph(filteredData);
+  updateBodyCompositionGraph(filteredData, granularityValue);
   updateBodyCompositionTable(filteredData, granularityValue);
 }
 document.getElementById("granularity-dropdown").addEventListener("change", handleGranularityChange);
@@ -201,9 +258,10 @@ function handleDurationChange() {
   const granularityValue = document.getElementById("granularity-dropdown").value;
   const durationValue = parseInt(this.value);
   const targetData = granularityValue === "daily" ? dailyData : monthlyData;
-  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue);
+  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue, granularityValue);
 
-  updateGraph(filteredData);
+  // グラフとテーブルを更新
+  updateBodyCompositionGraph(filteredData, granularityValue);
   updateBodyCompositionTable(filteredData, granularityValue);
 }
 document.getElementById("duration-dropdown").addEventListener("change", handleDurationChange);

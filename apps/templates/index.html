@@ -39,4 +39,5 @@ content %} {% if not current_user.is_authenticated %}
   id="body-composition-table"
   class="table table-striped table-bordered table-hover"
 ></table>
+<script src="{{ url_for('static', filename='bodyCompositionVisualization.js') }}"></script>
 {% endblock %}
