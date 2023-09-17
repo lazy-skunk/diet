@@ -92,11 +92,14 @@ function createGraph(bodyCompositionData) {
   });
 }
 
+// 体組成情報のテーブルを更新する関数
 function updateBodyCompositionTable(data, granularity) {
   const table = document.getElementById("body-composition-table");
 
   let weightHeader = granularity === "monthly" ? "平均体重 (kg)" : "体重 (kg)";
   let bodyFatHeader = granularity === "monthly" ? "平均体脂肪率 (%)" : "体脂肪率 (%)";
+
+  const sortedIndices = data.date.map((date, index) => index).sort((a, b) => new Date(data.date[b]) - new Date(data.date[a]));
 
   let tableHtml = `
     <thead>
@@ -109,7 +112,7 @@ function updateBodyCompositionTable(data, granularity) {
     <tbody>
   `;
 
-  for (let i = 0; i < data.date.length; i++) {
+  for (const i of sortedIndices) {
     tableHtml += `
       <tr>
         <td>${data.date[i]}</td>
@@ -122,6 +125,7 @@ function updateBodyCompositionTable(data, granularity) {
   tableHtml += '</tbody>';
   table.innerHTML = tableHtml;
 }
+
 
 async function initializePage() {
   await fetchBodyCompositionData();
@@ -182,10 +186,13 @@ function handleGranularityChange() {
   }).join('');
 
   // 表示粒度に応じて、グラフを更新する。
-  const durationValue = parseInt(durationDropdown.value);
+  const durationValue = parseInt(document.getElementById("duration-dropdown").value);
   const targetData = granularityValue === "daily" ? dailyData : monthlyData;
   const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue);
+
+  // グラフとテーブルを更新
   updateGraph(filteredData);
+  updateBodyCompositionTable(filteredData, granularityValue);
 }
 document.getElementById("granularity-dropdown").addEventListener("change", handleGranularityChange);
 
@@ -195,121 +202,8 @@ function handleDurationChange() {
   const durationValue = parseInt(this.value);
   const targetData = granularityValue === "daily" ? dailyData : monthlyData;
   const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue);
+
   updateGraph(filteredData);
+  updateBodyCompositionTable(filteredData, granularityValue);
 }
 document.getElementById("duration-dropdown").addEventListener("change", handleDurationChange);
-
-
-
-
-/*
-function updateTable(dates, weightData, bodyFatData, weightChangeRate, granularity) {
-  const tableContainer = document.getElementById("body-composition-table");
-
-  let weightHeader = granularity === "monthly" ? "平均体重 (kg)" : "体重 (kg)";
-  let bodyFatHeader = granularity === "monthly" ? "平均体脂肪率 (%)" : "体脂肪率 (%)";
-
-  let tableHtml = `
-  <thead>
-  <tr>
-  <th>日付</th>
-  <th>${weightHeader}</th>
-  <th>${bodyFatHeader}</th>
-  `;
-
-  // 月別の表示の場合だけ、体重変化率を追加
-  if (granularity === "monthly") {
-    tableHtml += `<th>体重変化率 (%)</th>`;
-  }
-
-  tableHtml += `</tr></thead><tbody>`;
-
-  const indices = Array.from({ length: dates.length }, (_, i) => i);
-  indices.sort((a, b) => {
-    const dateA = new Date(dates[a]);
-    const dateB = new Date(dates[b]);
-    return dateB - dateA;
-  });
-
-  for (const i of indices) {
-    tableHtml += `<tr>
-    <td>${dates[i]}</td>
-    <td>${weightData[i].toFixed(2)}</td>
-    <td>${bodyFatData[i] ? bodyFatData[i].toFixed(2) : "N/A"}</td>`;
-    if (granularity === "monthly" && weightChangeRate[i]) {
-      tableHtml += `<td>${weightChangeRate[i].toFixed(2)}</td>`;
-    }
-    tableHtml += `</tr>`;
-  }
-
-  tableHtml += `</tbody>`;
-  tableContainer.innerHTML = tableHtml;
-}
-
-function filterDataByDays(data, days) {
-  const now = new Date();
-  const cutoffDate = new Date();
-  cutoffDate.setDate(now.getDate() - days);
-  return data.filter(item => new Date(item.date) > cutoffDate);
-}
-
-function average(arr) {
-  if (arr.length === 0) return null;
-  const sum = arr.reduce((acc, val) => acc + val, 0);
-  return parseFloat((sum / arr.length).toFixed(2));
-}
-
-function processMonthlyData(data) {
-  const monthlyData = {
-    dates: [],
-    weight_data: [],
-    body_fat_data: [],
-    weight_change_rate: []  // 体重変化率のデータを保持する配列
-  };
-  
-  let tempWeights = [];
-  let tempBodyFats = [];
-  let currentMonth = new Date(data.dates[0]).getMonth();
-  let currentYear = new Date(data.dates[0]).getFullYear();
-  
-  for (let i = 0; i < data.dates.length; i++) {
-    const date = new Date(data.dates[i]);
-    const month = date.getMonth();
-  const year = date.getFullYear();
-  
-  if (month !== currentMonth || i === data.dates.length - 1) {
-    if (i === data.dates.length - 1 && month === currentMonth) {
-      tempWeights.push(data.weight_data[i]);
-      tempBodyFats.push(data.body_fat_data[i]);
-    }
-    
-    monthlyData.dates.push(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`);
-    monthlyData.weight_data.push(average(tempWeights));
-    monthlyData.body_fat_data.push(average(tempBodyFats));
-    
-    // 体重変化率の計算
-    if (monthlyData.weight_data.length > 1) {
-      const prevWeight = monthlyData.weight_data[monthlyData.weight_data.length - 2];
-      const currentWeight = average(tempWeights);
-      const changeRate = ((currentWeight - prevWeight) / prevWeight) * 100;
-      monthlyData.weight_change_rate.push(parseFloat(changeRate.toFixed(2))); // 小数点第2位まで四捨五入
-    } else {
-      // 最初のデータポイントでは変化率が計算できないのでnullを挿入
-      monthlyData.weight_change_rate.push(null);
-    }
-    
-    tempWeights = [];
-    tempBodyFats = [];
-    currentMonth = month;
-    currentYear = year;
-  }
-
-  if (i !== data.dates.length - 1 || month !== currentMonth) {
-    tempWeights.push(data.weight_data[i]);
-    tempBodyFats.push(data.body_fat_data[i]);
-  }
-}
- 
-return monthlyData;
-}
-*/
