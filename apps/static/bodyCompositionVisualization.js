@@ -29,7 +29,7 @@ function populateMonthlyData(monthlyDataSet) {
   monthlyData.weightChangeRate = monthlyDataSet.map(item => item.weight_change_rate);
 }
 
-function createBodyCompositionGraph(bodyCompositionData) {
+function createGraph(bodyCompositionData) {
   const ctx = document.getElementById("bodyCompositionGraph").getContext("2d");
 
   chartInstance = new Chart(ctx, {
@@ -130,7 +130,7 @@ function createTableData(bodyCompositionData, sortedIndices, granularity) {
   return tableHtml;
 }
 
-function updateBodyCompositionTable(bodyCompositionData, granularity) {
+function updateTable(bodyCompositionData, granularity) {
   const table = document.getElementById("body-composition-table");
   const [weightHeader, bodyFatHeader] = getHeaders(granularity);
   const tableHeaderHtml = createTableHeader(weightHeader, bodyFatHeader, granularity);
@@ -139,34 +139,38 @@ function updateBodyCompositionTable(bodyCompositionData, granularity) {
   table.innerHTML = tableHeaderHtml + tableDataHtml;
 }
 
-
-async function initializePage() {
+async function loadDataAndRender() {
   const body_composition_data = await fetchApiData("/get_body_composition_data");
   populateDailyData(body_composition_data[0]);
   populateMonthlyData(body_composition_data[1]);
 
   const durationValue = parseInt(document.getElementById("duration-dropdown").value);
   const granularityValue = document.getElementById("granularity-dropdown").value;
-  const filteredBodyCompositionData = filterBodyCompositionDataByDuration(dailyData, durationValue);
-  createBodyCompositionGraph(filteredBodyCompositionData);
-  updateBodyCompositionTable(filteredBodyCompositionData, granularityValue);
+  const filteredBodyCompositionData = filterDataByDuration(dailyData, durationValue);
+
+  createGraph(filteredBodyCompositionData);
+  updateTable(filteredBodyCompositionData, granularityValue);
 }
-window.onload = initializePage();
+window.onload = loadDataAndRender();
+
+function getTargetData(granularityValue) {
+  if (granularityValue === "monthly") {
+    return monthlyData;
+  } else if (granularityValue === "daily") {
+    return dailyData;
+  }
+  return null;
+}
 
 function handleGranularityChange() {
   const granularityValue = this.value;
   const durationValue = parseInt(document.getElementById("duration-dropdown").value);
 
-  let targetData;
-  if (granularityValue === "daily") {
-    targetData = dailyData;
-  } else if (granularityValue === "monthly") {
-    targetData = monthlyData;
-  }
-  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue);
+  const targetBodyCompositionData = getTargetData(granularityValue);
+  const filteredData = filterDataByDuration(targetBodyCompositionData, durationValue);
 
-  updateBodyCompositionGraph(filteredData, granularityValue);
-  updateBodyCompositionTable(filteredData, granularityValue);
+  updateGraph(filteredData, granularityValue);
+  updateTable(filteredData, granularityValue);
 }
 
 function getLabelsByGranularity(granularity) {
@@ -188,20 +192,29 @@ function updateGraphData(chartInstance, bodyCompositionData) {
   chartInstance.data.datasets[1].data = bodyCompositionData.bodyFat;
 }
 
-function updateBodyCompositionGraph(bodyCompositionData, granularity) {
+function updateGraph(bodyCompositionData, granularity) {
   const { weightLabel, bodyFatLabel } = getLabelsByGranularity(granularity);
   updateGraphLabels(chartInstance, weightLabel, bodyFatLabel);
   updateGraphData(chartInstance, bodyCompositionData);
   chartInstance.update();
 }
-
-
-function filterBodyCompositionDataByDuration(BodyCompositionData, days, granularity) {
+function calculateCutoffDate(days) {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - days);
+  return cutoffDate;
+}
 
-  const filteredIndices = BodyCompositionData.date.map((d, index) => (new Date(d) >= cutoffDate) ? index : -1).filter(index => index !== -1);
+function getFilteredIndices(dates, cutoffDate) {
+  const indices = [];
+  for (let i = 0; i < dates.length; i++) {
+    if (new Date(dates[i]) >= cutoffDate) {
+      indices.push(i);
+    }
+  }
+  return indices;
+}
 
+function generateFilteredData(BodyCompositionData, filteredIndices, granularity) {
   const filteredData = {
     date: filteredIndices.map(index => BodyCompositionData.date[index]),
     weight: filteredIndices.map(index => BodyCompositionData.weight[index]),
@@ -211,12 +224,17 @@ function filterBodyCompositionDataByDuration(BodyCompositionData, days, granular
   if (granularity === "monthly") {
     filteredData.weightChangeRate = filteredIndices.map(index => BodyCompositionData.weightChangeRate[index]);
   }
+
   return filteredData;
 }
 
-// TODO メソッド分けしたいかも。
-function handleGranularityChange() {
-  const granularityValue = this.value;
+function filterDataByDuration(BodyCompositionData, days, granularity) {
+  const cutoffDate = calculateCutoffDate(days);
+  const filteredIndices = getFilteredIndices(BodyCompositionData.date, cutoffDate);
+  return generateFilteredData(BodyCompositionData, filteredIndices, granularity);
+}
+
+function updateDurationOptions(granularityValue) {
   let options = [
     { value: "7", label: "1週間" },
     { value: "30", label: "1か月" },
@@ -226,42 +244,42 @@ function handleGranularityChange() {
     { value: "1095", label: "3年" }
   ];
 
-  // 表示粒度に応じて、表示期間のオプションを変更し、その初期値を設定する。
-  let defaultGranularityValue;
+  let selectedGranularityValue;
   if (granularityValue === "monthly") {
     options = options.filter(opt => opt.value !== "7");
-    defaultGranularityValue = "365";
-  } else {
-    defaultGranularityValue = "30";
+    selectedGranularityValue = "365";
+  } else if (granularityValue === "daily") {
+    selectedGranularityValue = "30";
   }
 
-  // 変更した表示オプションを反映する。
   const durationDropdown = document.getElementById("duration-dropdown");
   durationDropdown.innerHTML = options.map(opt => {
-    let selected = opt.value === defaultGranularityValue ? ' selected' : '';
+    let selected = opt.value === selectedGranularityValue ? ' selected' : '';
     return `<option value="${opt.value}"${selected}>${opt.label}</option>`;
   }).join('');
+}
 
-  // 表示粒度に応じて、グラフを更新する。
+function updateGraphAndTable(granularityValue) {
   const durationValue = parseInt(document.getElementById("duration-dropdown").value);
-  const targetData = granularityValue === "daily" ? dailyData : monthlyData;
-  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue, granularityValue);
+  const targetData = getTargetData(granularityValue);
+  const filteredData = filterDataByDuration(targetData, durationValue, granularityValue);
+  updateGraph(filteredData, granularityValue);
+  updateTable(filteredData, granularityValue);
+}
 
-  // グラフとテーブルを更新
-  updateBodyCompositionGraph(filteredData, granularityValue);
-  updateBodyCompositionTable(filteredData, granularityValue);
+function handleGranularityChange() {
+  const granularityValue = this.value;
+  updateDurationOptions(granularityValue);
+  updateGraphAndTable(granularityValue);
 }
 document.getElementById("granularity-dropdown").addEventListener("change", handleGranularityChange);
 
-// TODO メソッド名を考えないとなあ。
 function handleDurationChange() {
   const granularityValue = document.getElementById("granularity-dropdown").value;
   const durationValue = parseInt(this.value);
-  const targetData = granularityValue === "daily" ? dailyData : monthlyData;
-  const filteredData = filterBodyCompositionDataByDuration(targetData, durationValue, granularityValue);
-
-  // グラフとテーブルを更新
-  updateBodyCompositionGraph(filteredData, granularityValue);
-  updateBodyCompositionTable(filteredData, granularityValue);
+  const targetData = getTargetData(granularityValue);
+  const filteredData = filterDataByDuration(targetData, durationValue, granularityValue);
+  updateGraph(filteredData, granularityValue);
+  updateTable(filteredData, granularityValue);
 }
 document.getElementById("duration-dropdown").addEventListener("change", handleDurationChange);
