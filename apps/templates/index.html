@@ -5,31 +5,29 @@ content %} {% if not current_user.is_authenticated %}
 
 <!-- データ表示粒度ドロップダウン -->
 <div class="row mb-3">
-  <div class="col-auto d-flex align-items-center">
-    <label for="granularity-dropdown" class="form-label me-3"
-      >データ表示粒度</label
-    >
-    <select class="form-select w-auto" id="granularity-dropdown">
-      <option value="daily" selected>日別</option>
-      <option value="monthly">月別</option>
-    </select>
+  <div class="col-6">
+    <div class="form-floating">
+      <select class="form-select" id="granularity-dropdown">
+        <option value="daily" selected>日別</option>
+        <option value="monthly">月別</option>
+      </select>
+      <label for="granularity-dropdown">データ表示粒度</label>
+    </div>
   </div>
-</div>
 
-<!-- データ表示期間ドロップダウン -->
-<div class="row mb-3">
-  <div class="col-auto d-flex align-items-center">
-    <label for="duration-dropdown" class="form-label me-3"
-      >データ表示期間</label
-    >
-    <select class="form-select w-auto" id="duration-dropdown">
-      <option value="7">7日</option>
-      <option value="30" selected>30日</option>
-      <option value="90">90日</option>
-      <option value="180">180日</option>
-      <option value="365">1年</option>
-      <option value="1095">3年</option>
-    </select>
+  <!-- データ表示期間ドロップダウン -->
+  <div class="col-6">
+    <div class="form-floating">
+      <select class="form-select" id="duration-dropdown">
+        <option value="7">7日</option>
+        <option value="30" selected>30日</option>
+        <option value="90">90日</option>
+        <option value="180">180日</option>
+        <option value="365">1年</option>
+        <option value="1095">3年</option>
+      </select>
+      <label for="duration-dropdown">データ表示期間</label>
+    </div>
   </div>
 </div>
 
