@@ -236,10 +236,10 @@ function filterDataByDuration(BodyCompositionData, days, granularity) {
 
 function updateDurationOptions(granularityValue) {
   let options = [
-    { value: "7", label: "1週間" },
-    { value: "30", label: "1か月" },
-    { value: "90", label: "3か月" },
-    { value: "180", label: "半年" },
+    { value: "7", label: "7日" },
+    { value: "30", label: "30日" },
+    { value: "90", label: "90日" },
+    { value: "180", label: "180日" },
     { value: "365", label: "1年" },
     { value: "1095", label: "3年" }
   ];
