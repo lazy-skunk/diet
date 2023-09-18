@@ -1,6 +1,6 @@
+import json
 import random
 from datetime import date, datetime, timedelta
-import json
 
 import pandas as pd
 from flask import Blueprint, flash, jsonify, redirect, render_template, url_for
