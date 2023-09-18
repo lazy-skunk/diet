@@ -42,5 +42,6 @@ content %} {% if not current_user.is_authenticated %}
   class="table table-striped table-bordered table-hover"
 ></table>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='bodyCompositionVisualization.js') }}"></script>
 {% endblock %}

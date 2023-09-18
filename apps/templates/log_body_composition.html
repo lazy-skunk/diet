@@ -6,32 +6,17 @@
 <form method="POST" action="{{ url_for('main.log_body_composition') }}">
   {{ form.hidden_tag() }}
 
-  <!-- 日付入力欄 -->
+  <!-- 日付、体重と体脂肪率の入力欄 -->
+  {% for field in [form.date, form.weight, form.body_fat] %}
   <div class="row">
-    <div class="col-3">
-      <div class="mb-3">
-        {{ form.date.label }} {{ form.date(class="form-control") }}
+    <div class="col-6">
+      <div class="form-floating mb-3">
+        {{ field(class="form-control", id=field.id) }}
+        <label for="{{ field.id }}">{{ field.label.text }}</label>
       </div>
     </div>
   </div>
-
-  <!-- 体重入力欄 -->
-  <div class="row">
-    <div class="col-2">
-      <div class="mb-3">
-        {{ form.weight.label }} {{ form.weight(class="form-control") }}
-      </div>
-    </div>
-  </div>
-
-  <!-- 体脂肪率入力欄 -->
-  <div class="row">
-    <div class="col-2">
-      <div class="mb-3">
-        {{ form.body_fat.label }} {{ form.body_fat(class="form-control") }}
-      </div>
-    </div>
-  </div>
+  {% endfor %}
 
   <!-- 記録ボタン -->
   <div class="mb-3">{{ form.submit(class="btn btn-primary") }}</div>

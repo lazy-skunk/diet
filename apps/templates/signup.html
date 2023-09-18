@@ -6,69 +6,18 @@
 <form method="POST" action="/signup">
   {{ form.hidden_tag() }}
 
-  <!-- ユーザー名入力欄 -->
+  <!-- ユーザー名、Eメール、パスワード、パスワード(確認用)、日付、体重と体脂肪率の入力欄 -->
+  {% for field in [form.username, form.email, form.password,
+  form.confirm_password, form.date, form.weight, form.body_fat] %}
   <div class="row">
     <div class="col-6">
-      <div class="mb-3">
-        {{ form.username.label }} {{ form.username(class="form-control") }}
+      <div class="form-floating mb-3">
+        {{ field(class="form-control", id=field.id) }}
+        <label for="{{ field.id }}">{{ field.label.text }}</label>
       </div>
     </div>
   </div>
-
-  <!-- Eメール入力欄 -->
-  <div class="row">
-    <div class="col-6">
-      <div class="mb-3">
-        {{ form.email.label }} {{ form.email(class="form-control") }}
-      </div>
-    </div>
-  </div>
-
-  <!-- パスワード入力欄 -->
-  <div class="row">
-    <div class="col-6">
-      <div class="mb-3">
-        {{ form.password.label }} {{ form.password(class="form-control") }}
-      </div>
-    </div>
-  </div>
-
-  <!-- パスワード(確認用)入力欄 -->
-  <div class="row mb-3">
-    <div class="col-6">
-      <div class="mb-3">
-        {{ form.confirm_password.label }} {{
-        form.confirm_password(class="form-control") }}
-      </div>
-    </div>
-  </div>
-
-  <!-- 日付入力欄 -->
-  <div class="row">
-    <div class="col-3">
-      <div class="mb-3">
-        {{ form.date.label }} {{ form.date(class="form-control") }}
-      </div>
-    </div>
-  </div>
-
-  <!-- 体重入力欄 -->
-  <div class="row">
-    <div class="col-2">
-      <div class="mb-3">
-        {{ form.weight.label }} {{ form.weight(class="form-control") }}
-      </div>
-    </div>
-  </div>
-
-  <!-- 体脂肪率入力欄 -->
-  <div class="row">
-    <div class="col-2">
-      <div class="mb-3">
-        {{ form.body_fat.label }} {{ form.body_fat(class="form-control") }}
-      </div>
-    </div>
-  </div>
+  {% endfor %}
 
   <!-- 登録ボタン -->
   <div class="mb-3">{{ form.submit(class="btn btn-primary") }}</div>
