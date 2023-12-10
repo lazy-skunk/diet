@@ -1,5 +1,4 @@
 from flask import Flask, g, render_template
-from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, current_user
 
 from .config import config
@@ -8,7 +7,6 @@ from .models import User, db
 
 def create_app(config_key):
     app = Flask(__name__)
-    Bootstrap(app)
     app.config.from_object(config[config_key])
 
     db.init_app(app)
