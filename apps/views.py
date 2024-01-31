@@ -146,20 +146,20 @@ def logout():
 def fetch_body_composition_data():
     if current_user.is_authenticated:
         user_id = current_user.id
-        body_composition_objects = get_body_compositions(user_id)
-        body_composition_object_lists = convert_objects_to_object_lists(
+        body_composition_objects = _get_body_compositions(user_id)
+        body_composition_object_lists = _convert_objects_to_object_lists(
             body_composition_objects
         )
     else:
-        body_composition_object_lists = generate_dummy_data_object_list()
+        body_composition_object_lists = _generate_dummy_data_object_list()
 
     body_composition_df = pd.DataFrame(body_composition_object_lists)
     body_composition_df["date"] = pd.to_datetime(body_composition_df["date"])
     body_composition_df.set_index("date", inplace=True)
     monthly_averages_and_weight_change_rates_df = (
-        compute_monthly_averages_and_weight_change_rates(body_composition_df)
+        _compute_monthly_averages_and_weight_change_rates(body_composition_df)
     )
-    monthly_averages_and_weight_change_rates_json = convert_dataframe_to_json(
+    monthly_averages_and_weight_change_rates_json = _convert_dataframe_to_json(
         monthly_averages_and_weight_change_rates_df
     )
 
@@ -168,7 +168,7 @@ def fetch_body_composition_data():
     )
 
 
-def get_body_compositions(user_id):
+def _get_body_compositions(user_id):
     body_composition_objects = (
         BodyComposition.query.filter_by(user_id=user_id)
         .order_by(BodyComposition.date.asc())
@@ -177,7 +177,7 @@ def get_body_compositions(user_id):
     return body_composition_objects
 
 
-def convert_objects_to_object_lists(body_composition_objects):
+def _convert_objects_to_object_lists(body_composition_objects):
     body_composition_object_lists = [
         {
             "date": bco.date.strftime("%Y-%m-%d"),
@@ -189,7 +189,7 @@ def convert_objects_to_object_lists(body_composition_objects):
     return body_composition_object_lists
 
 
-def compute_monthly_averages_and_weight_change_rates(body_composition_df):
+def _compute_monthly_averages_and_weight_change_rates(body_composition_df):
     monthly_averages_and_weight_change_rates_df = (
         body_composition_df.resample("M").mean().round(2)
     )
@@ -211,12 +211,12 @@ def compute_monthly_averages_and_weight_change_rates(body_composition_df):
     return monthly_averages_and_weight_change_rates_df
 
 
-def convert_dataframe_to_json(df):
+def _convert_dataframe_to_json(df):
     json_data = df.to_json(orient="records")
     return json.loads(json_data)
 
 
-def generate_dummy_data_object_list():
+def _generate_dummy_data_object_list():
     duration = 365 * 3
     today = datetime.now()
     date = today - timedelta(days=int(duration))
