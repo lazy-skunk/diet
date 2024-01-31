@@ -26,7 +26,7 @@ class LogBodyCompositionTest(BaseTestCase):
     # 正しい値を入力した場合、登録されてホームページに遷移すること。
     # 不正な値を入力した場合、エラーが表示されること。
     # 登録済みの値を更新できること。
-    pass    
+    pass
 
 
 class SigninPageTest(BaseTestCase):
@@ -59,14 +59,6 @@ class FetchBodyCompositionDataTest(BaseTestCase):
     # 未ログインの場合はサンプルデータが返ってきていること。
     # ログインしている場合は、そのユーザーの情報が返ってきていること。
     pass
-
-''' 下記のメソッドのテストケースは後日考える。今日は寝る。 '''
-# get_body_compositions
-# convert_objects_to_object_lists
-# compute_monthly_averages_and_weight_change_rates
-# convert_dataframe_to_json
-# generate_dummy_data_object_list
-# その他、views の中のメソッド名について、頭に_を付けるべきものがないかを見直したい。
 
 
 if __name__ == '__main__':
