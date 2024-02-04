@@ -1,6 +1,7 @@
 import json
 import random
 from datetime import date, datetime, timedelta
+from typing import List
 
 import pandas as pd
 from flask import Blueprint, flash, jsonify, redirect, render_template, url_for
@@ -8,18 +9,19 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from .forms import LogBodyCompositionForm, SigninForm, SignupForm
 from .models import BodyComposition, User, db
+from werkzeug.wrappers import Response
 
 main = Blueprint("main", __name__)
 
 
 @main.route("/")
-def index():
+def index() -> str:
     return render_template("index.html", current_user=current_user)
 
 
 @main.route("/log_body_composition", methods=["GET", "POST"])
 @login_required
-def log_body_composition():
+def log_body_composition() -> str | Response:
     user_id = current_user.id
     form = LogBodyCompositionForm()
 
@@ -79,7 +81,7 @@ def log_body_composition():
 
 
 @main.route("/signup", methods=["GET", "POST"])
-def signup():
+def signup() -> str | Response:
     form = SignupForm()
 
     if form.validate_on_submit():
@@ -116,7 +118,7 @@ def signup():
 
 
 @main.route("/signin", methods=["GET", "POST"])
-def signin():
+def signin() -> str | Response:
     form = SigninForm()
 
     if form.validate_on_submit():
@@ -137,15 +139,15 @@ def signin():
 
 @main.route("/logout")
 @login_required
-def logout():
+def logout() -> Response:
     logout_user()
     flash("ログアウトに成功しました。ご利用ありがとうございました。", "success")
     return redirect(url_for("main.index"))
 
 
 @main.route("/get_body_composition_data", methods=["GET"])
-def fetch_body_composition_data():
-    def _get_body_compositions(user_id):
+def fetch_body_composition_data() -> List:
+    def _get_body_compositions(user_id: str) -> List:
         body_composition_objects = (
             BodyComposition.query.filter_by(user_id=user_id)
             .order_by(BodyComposition.date.asc())
