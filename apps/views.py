@@ -1,12 +1,11 @@
 import json
 import random
 from datetime import date, datetime, timedelta
-from typing import List
-
+from typing import List, Dict, Union, Any
 import pandas as pd
 from flask import Blueprint, flash, jsonify, redirect, render_template, url_for
 from flask_login import current_user, login_required, login_user, logout_user
-
+from pandas import DataFrame
 from .forms import LogBodyCompositionForm, SigninForm, SignupForm
 from .models import BodyComposition, User, db
 from werkzeug.wrappers import Response
@@ -146,7 +145,7 @@ def logout() -> Response:
 
 
 @main.route("/get_body_composition_data", methods=["GET"])
-def fetch_body_composition_data() -> List:
+def fetch_body_composition_data() -> Response:
     def _get_body_compositions(user_id: str) -> List:
         body_composition_objects = (
             BodyComposition.query.filter_by(user_id=user_id)
@@ -155,7 +154,7 @@ def fetch_body_composition_data() -> List:
         )
         return body_composition_objects
 
-    def _convert_objects_to_object_lists(body_composition_objects):
+    def _convert_objects_to_object_lists(body_composition_objects: List) -> list[dict[str, Union[str, float]]]:
         # TODO リスト内包表記はやめたいかも。
         body_composition_object_lists = [
             {
@@ -167,7 +166,7 @@ def fetch_body_composition_data() -> List:
         ]
         return body_composition_object_lists
 
-    def _compute_monthly_averages_and_weight_change_rates(body_composition_df):
+    def _compute_monthly_averages_and_weight_change_rates(body_composition_df: DataFrame) -> DataFrame:
         monthly_averages_and_weight_change_rates_df = (
             body_composition_df.resample("M").mean().round(2)
         )
@@ -188,11 +187,11 @@ def fetch_body_composition_data() -> List:
 
         return monthly_averages_and_weight_change_rates_df
 
-    def _convert_dataframe_to_json(df):
+    def _convert_dataframe_to_json(df: DataFrame) -> List[Dict[str, Any]]:
         json_data = df.to_json(orient="records")
         return json.loads(json_data)
 
-    def _generate_dummy_data_object_list():
+    def _generate_dummy_data_object_list() -> List[dict[str, Any]]:
         duration = 365 * 3
         today = datetime.now()
         date = today - timedelta(days=int(duration))
@@ -218,7 +217,7 @@ def fetch_body_composition_data() -> List:
             date += timedelta(days=1)
 
         return body_composition_object_lists
-    
+
     if current_user.is_authenticated:
         user_id = current_user.id
         body_composition_objects = _get_body_compositions(user_id)
