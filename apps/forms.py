@@ -26,7 +26,7 @@ class CustomBodyFatFloatField(FloatField):
     この問題を解消するために、FloatField の設定を変更したクラスを作成した。
     """
 
-    def process_formdata(self, valuelist):
+    def process_formdata(self, valuelist: list) -> None:
         if valuelist:
             try:
                 self.data = float(valuelist[0])
@@ -36,7 +36,7 @@ class CustomBodyFatFloatField(FloatField):
 
 
 class BaseLogBodyCompositionForm(FlaskForm):
-    def validate_not_future_date(form, field):
+    def validate_not_future_date(form: "BaseLogBodyCompositionForm", field: DateField) -> None:
         if field.data > date.today():
             raise ValidationError("今日以前の日付を選択してください。")
 
