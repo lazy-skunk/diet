@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diet"
+version = "0.1.0"
+dependencies = [
+  "flask",
+  "flask_login",
+  "flask_sqlalchemy",
+  "python-dotenv",
+  "pandas",
+  "flask_wtf",
+]
+requires-python = ">= 3.12"
+authors = [
+  {name = "lazy_skunk"}
+]
+maintainers = [
+  {name = "lazy_skunk"}
+]
+description = "diet"
+readme = "README.md"
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "black",
+  "flake8",
+  "isort",
+  "mypy",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-config=.coveragerc --cov-report=html"
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 79
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+ignore_missing_imports = true
+disallow_untyped_defs = true
+
+# Flake8 cannot be configured via pyproject.toml
