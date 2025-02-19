@@ -11,7 +11,7 @@ dependencies = [
   "flask_sqlalchemy",
   "python-dotenv",
   "pandas",
-  "flask_wtf",
+  "flask_wtf[email]",
 ]
 requires-python = ">= 3.12"
 authors = [
