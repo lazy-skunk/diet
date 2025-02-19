@@ -1,14 +1,16 @@
 import json
 import random
 from datetime import date, datetime, timedelta
-from typing import List, Dict, Union, Any
+from typing import Any
+
 import pandas as pd
 from flask import Blueprint, flash, jsonify, redirect, render_template, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from pandas import DataFrame
+from werkzeug.wrappers import Response
+
 from .forms import LogBodyCompositionForm, SigninForm, SignupForm
 from .models import BodyComposition, User, db
-from werkzeug.wrappers import Response
 
 main = Blueprint("main", __name__)
 
@@ -18,6 +20,8 @@ def index() -> str:
     return render_template("index.html", current_user=current_user)
 
 
+# TODO: 循環的複雑度が高い。
+# TODO: views が MVC でいう controller だとしたら肥大化しすぎている。
 @main.route("/log_body_composition", methods=["GET", "POST"])
 @login_required
 def log_body_composition() -> str | Response:
@@ -40,7 +44,10 @@ def log_body_composition() -> str | Response:
         else:
             try:
                 log = BodyComposition(
-                    date=log_date, weight=weight, body_fat=body_fat, user_id=user_id
+                    date=log_date,
+                    weight=weight,
+                    body_fat=body_fat,
+                    user_id=user_id,
                 )
                 db.session.add(log)
             except Exception as e:
@@ -61,7 +68,8 @@ def log_body_composition() -> str | Response:
     # フォーム初期値設定
     today = date.today()
     todays_log = BodyComposition.query.filter_by(
-        date=today, user_id=user_id).first()
+        date=today, user_id=user_id
+    ).first()
 
     if todays_log:
         form.weight.data = todays_log.weight
@@ -79,6 +87,7 @@ def log_body_composition() -> str | Response:
     return render_template("log_body_composition.html", form=form)
 
 
+# TODO: views が MVC でいう controller だとしたら肥大化しすぎている。
 @main.route("/signup", methods=["GET", "POST"])
 def signup() -> str | Response:
     form = SignupForm()
@@ -95,16 +104,25 @@ def signup() -> str | Response:
         existing_email = User.query.filter_by(email=email).first()
 
         if existing_user:
-            flash("別のユーザー名を入力してください。このユーザー名は既に登録されています。", "danger")
+            flash(
+                "別のユーザー名を入力してください。このユーザー名は既に登録されています。",
+                "danger",
+            )
         elif existing_email:
-            flash("別のメールアドレスを入力してください。このメールアドレスは既に登録されています。", "danger")
+            flash(
+                "別のメールアドレスを入力してください。このメールアドレスは既に登録されています。",
+                "danger",
+            )
         else:
             user = User(username=username, email=email, password=password)
             db.session.add(user)
             db.session.commit()
 
             body_composition = BodyComposition(
-                date=log_date, weight=weight, body_fat=body_fat, user_id=user.id
+                date=log_date,
+                weight=weight,
+                body_fat=body_fat,
+                user_id=user.id,
             )
             db.session.add(body_composition)
             db.session.commit()
@@ -131,7 +149,10 @@ def signin() -> str | Response:
             flash("ログインに成功しました。", "success")
             return redirect(url_for("main.index"))
         else:
-            flash("ログインに失敗しました。ユーザー名またはパスワードが誤っています。", "danger")
+            flash(
+                "ログインに失敗しました。ユーザー名またはパスワードが誤っています。",
+                "danger",
+            )
 
     return render_template("signin.html", form=form, current_user=current_user)
 
@@ -140,13 +161,17 @@ def signin() -> str | Response:
 @login_required
 def logout() -> Response:
     logout_user()
-    flash("ログアウトに成功しました。ご利用ありがとうございました。", "success")
+    flash(
+        "ログアウトに成功しました。ご利用ありがとうございました。", "success"
+    )
     return redirect(url_for("main.index"))
 
 
+# TODO: 循環的複雑度が高い。
+# TODO: views が MVC でいう controller だとしたら肥大化しすぎている。
 @main.route("/get_body_composition_data", methods=["GET"])
 def fetch_body_composition_data() -> Response:
-    def _get_body_compositions(user_id: str) -> List:
+    def _get_body_compositions(user_id: str) -> list:
         body_composition_objects = (
             BodyComposition.query.filter_by(user_id=user_id)
             .order_by(BodyComposition.date.asc())
@@ -154,8 +179,9 @@ def fetch_body_composition_data() -> Response:
         )
         return body_composition_objects
 
-    def _convert_objects_to_object_lists(body_composition_objects: List) -> list[dict[str, Union[str, float]]]:
-        # TODO リスト内包表記はやめたいかも。
+    def _convert_objects_to_object_lists(
+        body_composition_objects: list,
+    ) -> list[dict[str, str | float]]:
         body_composition_object_lists = [
             {
                 "date": bco.date.strftime("%Y-%m-%d"),
@@ -166,7 +192,9 @@ def fetch_body_composition_data() -> Response:
         ]
         return body_composition_object_lists
 
-    def _compute_monthly_averages_and_weight_change_rates(body_composition_df: DataFrame) -> DataFrame:
+    def _compute_monthly_averages_and_weight_change_rates(
+        body_composition_df: DataFrame,
+    ) -> DataFrame:
         monthly_averages_and_weight_change_rates_df = (
             body_composition_df.resample("M").mean().round(2)
         )
@@ -174,24 +202,28 @@ def fetch_body_composition_data() -> Response:
         monthly_averages_and_weight_change_rates_df["weight_change_rate"] = (
             (
                 monthly_averages_and_weight_change_rates_df["weight"]
-                - monthly_averages_and_weight_change_rates_df["weight"].shift(1)
+                - monthly_averages_and_weight_change_rates_df["weight"].shift(
+                    1
+                )
             )
             / monthly_averages_and_weight_change_rates_df["weight"].shift(1)
             * 100
         ).round(2)
 
         monthly_averages_and_weight_change_rates_df.reset_index(inplace=True)
-        monthly_averages_and_weight_change_rates_df[
-            "date"
-        ] = monthly_averages_and_weight_change_rates_df["date"].dt.strftime("%Y-%m")
+        monthly_averages_and_weight_change_rates_df["date"] = (
+            monthly_averages_and_weight_change_rates_df["date"].dt.strftime(
+                "%Y-%m"
+            )
+        )
 
         return monthly_averages_and_weight_change_rates_df
 
-    def _convert_dataframe_to_json(df: DataFrame) -> List[Dict[str, Any]]:
+    def _convert_dataframe_to_json(df: DataFrame) -> list[dict[str, Any]]:
         json_data = df.to_json(orient="records")
         return json.loads(json_data)
 
-    def _generate_dummy_data_object_list() -> List[dict[str, Any]]:
+    def _generate_dummy_data_object_list() -> list[dict[str, Any]]:
         duration = 365 * 3
         today = datetime.now()
         date = today - timedelta(days=int(duration))
@@ -238,5 +270,6 @@ def fetch_body_composition_data() -> Response:
     )
 
     return jsonify(
-        body_composition_object_lists, monthly_averages_and_weight_change_rates_json
+        body_composition_object_lists,
+        monthly_averages_and_weight_change_rates_json,
     )

@@ -1,10 +1,11 @@
 import unittest
+
 from apps.app import create_app
 
 
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = create_app('testing')
+        self.app = create_app("testing")
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
@@ -15,7 +16,7 @@ class BaseTestCase(unittest.TestCase):
 
 class IndexPageTest(BaseTestCase):
     def test_index_page(self):
-        response = self.client.get('/')
+        response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
 
 
@@ -31,16 +32,18 @@ class LogBodyCompositionTest(BaseTestCase):
 
 class SigninPageTest(BaseTestCase):
     def test_signin_page(self):
-        response = self.client.get('/signin')
+        response = self.client.get("/signin")
         self.assertEqual(response.status_code, 200)
+
     # 正しいアカウント情報でサインインした場合、ホームページに遷移することの確認をする。
     # 誤ったアカウント情報でサインインした場合、エラーメッセージが表示されることを確認する。
 
 
 class SignupPageTest(BaseTestCase):
     def test_signup_page(self):
-        response = self.client.get('/signup')
+        response = self.client.get("/signup")
         self.assertEqual(response.status_code, 200)
+
     # 既存のユーザー名でサインアップをした場合、エラーになることを確認する。
     # 既存のメールアドレスでサインアップした場合、エラーになることを確認する。
     # パスワードとパスワード（確認用）の値が異なっている場合はエラーを表示すること。
@@ -61,5 +64,5 @@ class FetchBodyCompositionDataTest(BaseTestCase):
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
