@@ -12,3 +12,8 @@ $ docker-compose exec app pwsh
 $ docker-compose stop
 $ docker-compose down --rmi all
 ```
+
+## Flask
+```
+flask run
+```
