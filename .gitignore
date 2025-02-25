@@ -1,0 +1,10 @@
+.mypy_cache
+.pytest_cache
+__pycache__
+build
+*.egg-info
+.coverage
+.env
+commands.txt
+*.sqlite
+MEMO.txt
