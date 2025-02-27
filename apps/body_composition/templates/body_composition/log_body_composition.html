@@ -1,12 +1,12 @@
-{% extends 'base.html' %} {% block title %} 体重記録 - My Flask App {% endblock
-%} {% block content %}
+{% extends '_base.html' %}
+{% block title %} Log Body Composition - Diet App {% endblock %}
+{% block content %}
 
-<h1>体重記録</h1>
+<h1>Log Body Composition</h1>
 
-<form method="POST" action="{{ url_for('main.log_body_composition') }}">
+<form method="POST" action="{{ url_for('body_composition.log_body_composition') }}">
   {{ form.hidden_tag() }}
 
-  <!-- 日付、体重と体脂肪率の入力欄 -->
   {% for field in [form.date, form.weight, form.body_fat] %}
   <div class="row">
     <div class="col-6">
@@ -18,7 +18,6 @@
   </div>
   {% endfor %}
 
-  <!-- 記録ボタン -->
   <div class="mb-3">{{ form.submit(class="btn btn-primary") }}</div>
 </form>
 

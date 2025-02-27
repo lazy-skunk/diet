@@ -52,7 +52,7 @@ class SignupPageTest(BaseTestCase):
     # 体脂肪率は入力せずとも登録できること。
 
 
-class LogoutTest(BaseTestCase):
+class signoutTest(BaseTestCase):
     # ログアウトが成功し、ホームページに遷移することの確認をする。
     # ログインしていない場合はログインページに遷移すること。
     pass

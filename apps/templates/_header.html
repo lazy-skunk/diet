@@ -1,0 +1,57 @@
+<header class="navbar navbar-expand-md">
+  <!-- アプリタイトル -->
+  <a class="navbar-brand" href="{{ url_for('main.index') }}">Diet</a>
+
+  <!-- メニュー用トグルボタン -->
+  <button
+    class="navbar-toggler"
+    type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#navbarNav"
+    aria-controls="navbarNav"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+  >
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <!-- ナビゲーションメニュー -->
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ms-auto">
+      {% if current_user.is_authenticated %}
+      <li class="nav-item">
+        <a class="nav-link px-2" href="{{ url_for('main.index') }}">Home</a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link px-2"
+          href="{{ url_for('body_composition.log_body_composition') }}"
+          >Log Body Composition</a
+        >
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-2" href="#">Log Training</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-2" href="#">Title</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-2" href="{{ url_for('auth.signout') }}"
+          >Sign out</a
+        >
+      </li>
+      {% else %}
+      <li class="nav-item">
+        <a class="nav-link px-2" href="{{ url_for('auth.signup') }}"
+          >Sign up</a
+        >
+      </li>
+      <li class="nav-item">
+        <a class="nav-link px-2" href="{{ url_for('auth.signin') }}"
+          >Sign in</a
+        >
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+</header>

@@ -12,6 +12,7 @@ dependencies = [
   "python-dotenv",
   "pandas",
   "flask_wtf[email]",
+  "flask_migrate",
 ]
 requires-python = ">= 3.12"
 authors = [
@@ -31,7 +32,7 @@ dev = [
   "flake8",
   "isort",
   "mypy",
-  "sqlalchemy-stubs",
+  "flask-debugtoolbar",
 ]
 
 [tool.pytest.ini_options]
@@ -47,6 +48,5 @@ profile = "black"
 [tool.mypy]
 ignore_missing_imports = true
 disallow_untyped_defs = true
-plugins = "sqlalchemy.ext.mypy.plugin"
 
 # Flake8 cannot be configured via pyproject.toml

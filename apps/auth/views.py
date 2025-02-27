@@ -1,0 +1,71 @@
+from flask import Blueprint, flash, redirect, render_template, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.wrappers import Response
+
+from apps.auth.forms import SigninForm, SignupForm
+from apps.auth.models import User
+from apps.utils.singleton_logger import SingletonLogger
+
+blueprint = Blueprint(
+    "auth",
+    __name__,
+    template_folder="templates",
+    static_folder="static",
+    url_prefix="/auth",
+)
+
+_logger = SingletonLogger.get_logger()
+
+
+@blueprint.route("/signup", methods=["GET", "POST"])
+def signup() -> str | Response:
+    form = SignupForm()
+
+    if form.validate_on_submit():
+        try:
+            new_user = User.create(
+                form.username.data, form.email.data, form.password.data
+            )
+
+            login_user(new_user)
+            flash("Signed up successfully.", "success")
+            return redirect(url_for("main.index"))
+        except (ValueError, TypeError) as e:
+            flash(str(e), "danger")
+        except SQLAlchemyError:
+            flash("Sign-up failed. Please try again later.", "danger")
+
+    return render_template(
+        "auth/signup.html", form=form, current_user=current_user
+    )
+
+
+@blueprint.route("/signin", methods=["GET", "POST"])
+def signin() -> str | Response:
+    form = SigninForm()
+
+    if form.validate_on_submit():
+        user = User.authenticate(form.email.data, form.password.data)
+
+        if user:
+            login_user(user)
+            flash("Signed in successfully.", "success")
+            return redirect(url_for("main.index"))
+
+        flash("Sign-in failed. Invalid email or password.", "danger")
+
+    return render_template(
+        "auth/signin.html", form=form, current_user=current_user
+    )
+
+
+@blueprint.route("/signout")
+@login_required
+def signout() -> Response:
+    _logger.info(
+        f"User ID: {current_user.id}, Username: '{current_user.username}'."
+    )
+    logout_user()
+    flash("Signed out successfully.", "success")
+    return redirect(url_for("main.index"))

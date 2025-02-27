@@ -1,12 +1,10 @@
 from datetime import date
 
 from flask_wtf import FlaskForm
-from wtforms import DateField, PasswordField, StringField, SubmitField
+from wtforms import DateField, SubmitField
 from wtforms.fields import FloatField
 from wtforms.validators import (
     DataRequired,
-    Email,
-    EqualTo,
     NumberRange,
     Optional,
     ValidationError,
@@ -76,44 +74,3 @@ class BaseLogBodyCompositionForm(FlaskForm):
 
 class LogBodyCompositionForm(BaseLogBodyCompositionForm):
     submit = SubmitField("記録")
-
-
-class SignupForm(BaseLogBodyCompositionForm):
-    username = StringField(
-        label="ユーザー名",
-        validators=[DataRequired(message="ユーザー名を入力してください。")],
-    )
-    email = StringField(
-        label="Eメール",
-        validators=[
-            DataRequired(message="Eメールアドレスを入力してください。"),
-            Email(),
-        ],
-    )
-    password = PasswordField(
-        label="パスワード",
-        validators=[DataRequired(message="パスワードを入力してください。")],
-    )
-    confirm_password = PasswordField(
-        label="パスワード (確認用)",
-        validators=[
-            DataRequired(message="パスワード (確認用) を入力してください。"),
-            EqualTo(
-                "password",
-                message="パスワードとパスワード (確認用) には同一の値を入力してください。",
-            ),
-        ],
-    )
-    submit = SubmitField("登録")
-
-
-class SigninForm(FlaskForm):
-    username = StringField(
-        label="ユーザー名",
-        validators=[DataRequired(message="ユーザー名を入力してください。")],
-    )
-    password = PasswordField(
-        label="パスワード",
-        validators=[DataRequired(message="パスワードを入力してください。")],
-    )
-    submit = SubmitField("ログイン")
