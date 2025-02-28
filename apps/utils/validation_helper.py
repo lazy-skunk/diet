@@ -59,3 +59,13 @@ class ValidationHelper:
             message = VALIDATION_FAILED_MSG.format(key=key, reason=reason)
             _logger.warning(message)
             raise ValueError(message)
+
+    @staticmethod
+    def validate_number_range(
+        key: str, value: float, min_value: float, max_value: float
+    ) -> None:
+        if not (min_value <= value <= max_value):
+            reason = f"Must be between {min_value} and {max_value}."
+            message = VALIDATION_FAILED_MSG.format(key=key, reason=reason)
+            _logger.warning(message)
+            raise ValueError(message)
