@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.wrappers import Response
 
 from apps.auth.forms import SigninForm, SignupForm
-from apps.auth.models import User
+from apps.auth.services.user_service import UserService
 from apps.utils.singleton_logger import SingletonLogger
 
 blueprint = Blueprint(
@@ -24,7 +24,7 @@ def signup() -> str | Response:
 
     if form.validate_on_submit():
         try:
-            new_user = User.create(
+            new_user = UserService.create(
                 form.username.data, form.email.data, form.password.data
             )
 
@@ -46,7 +46,7 @@ def signin() -> str | Response:
     form = SigninForm()
 
     if form.validate_on_submit():
-        user = User.authenticate(form.email.data, form.password.data)
+        user = UserService.authenticate(form.email.data, form.password.data)
 
         if user:
             login_user(user)
