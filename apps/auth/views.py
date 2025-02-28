@@ -63,9 +63,6 @@ def signin() -> str | Response:
 @blueprint.route("/signout")
 @login_required
 def signout() -> Response:
-    _logger.info(
-        f"User ID: {current_user.id}, Username: '{current_user.username}'."
-    )
     logout_user()
     flash("Signed out successfully.", "success")
     return redirect(url_for("main.index"))
