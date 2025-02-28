@@ -32,7 +32,7 @@ class UserService:
     def authenticate(email: str, password: str) -> User | None:
         _logger.info("Starting user authentication.")
 
-        user = User.query.filter_by(email=email).first()
+        user: User = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.password_hash, password):
             _logger.info("User authentication completed successfully.")
