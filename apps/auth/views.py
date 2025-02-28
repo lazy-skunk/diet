@@ -5,7 +5,6 @@ from werkzeug.wrappers import Response
 
 from apps.auth.forms import SigninForm, SignupForm
 from apps.auth.services.user_service import UserService
-from apps.utils.singleton_logger import SingletonLogger
 
 blueprint = Blueprint(
     "auth",
@@ -14,8 +13,6 @@ blueprint = Blueprint(
     static_folder="static",
     url_prefix="/auth",
 )
-
-_logger = SingletonLogger.get_logger()
 
 
 @blueprint.route("/signup", methods=["GET", "POST"])
