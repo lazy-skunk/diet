@@ -4,8 +4,8 @@
         "editor.formatOnSave": true
     },
     "[html]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "monosans.djlint", // Using djLint instead of Prettier for Jinja2 templates
+        "editor.formatOnSave": true,
     },
     "[css]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",

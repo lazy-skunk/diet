@@ -32,6 +32,7 @@ dev = [
   "flake8",
   "isort",
   "mypy",
+  "djlint",
   "flask-debugtoolbar",
 ]
 
@@ -48,5 +49,9 @@ profile = "black"
 [tool.mypy]
 ignore_missing_imports = true
 disallow_untyped_defs = true
+
+[tool.djlint]
+profile = "jinja"
+max_line_length = 79
 
 # Flake8 cannot be configured via pyproject.toml
