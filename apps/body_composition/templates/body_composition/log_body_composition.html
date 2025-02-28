@@ -1,24 +1,14 @@
-{% extends '_base.html' %}
-{% block title %} Log Body Composition - Diet App {% endblock %}
+{% extends "_base.html" %}
+
+{% block title %}
+  Log Body Composition - Diet App
+{% endblock title %}
+
 {% block content %}
+  <h1>Log Your Body Composition</h1>
 
-<h1>Log Body Composition</h1>
-
-<form method="POST" action="{{ url_for('body_composition.log_body_composition') }}">
-  {{ form.hidden_tag() }}
-
-  {% for field in [form.date, form.weight, form.body_fat] %}
-  <div class="row">
-    <div class="col-6">
-      <div class="form-floating mb-3">
-        {{ field(class="form-control", id=field.id) }}
-        <label for="{{ field.id }}">{{ field.label.text }}</label>
-      </div>
-    </div>
-  </div>
-  {% endfor %}
-
-  <div class="mb-3">{{ form.submit(class="btn btn-primary") }}</div>
-</form>
-
-{% endblock %}
+  <form method="post"
+        action="{{ url_for('body_composition.log_body_composition') }}">
+    {% include "_form_fields.html" %}
+  </form>
+{% endblock content %}
