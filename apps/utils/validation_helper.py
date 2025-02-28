@@ -1,4 +1,6 @@
+import datetime
 import re
+from datetime import date
 from typing import Any
 
 from apps.utils.singleton_logger import SingletonLogger
@@ -10,9 +12,9 @@ VALIDATION_FAILED_MSG = "Validation failed: {key} - {reason}"
 
 class ValidationHelper:
     @staticmethod
-    def validate_not_none(key: str, value: str) -> None:
+    def validate_not_none(key: str, value: object) -> None:
         if value is None:
-            reason = "Expected a string but got None."
+            reason = "Cannot be None."
             message = VALIDATION_FAILED_MSG.format(key=key, reason=reason)
             _logger.warning(message)
             raise TypeError(message)
@@ -49,3 +51,12 @@ class ValidationHelper:
             message = VALIDATION_FAILED_MSG.format(key=key, reason=reason)
             _logger.warning(message)
             raise ValueError(message)
+
+    @staticmethod
+    def validate_date(key: str, value: datetime.date) -> datetime.date:
+        if value > date.today():
+            reason = f"{value} is in the future and cannot be used."
+            message = VALIDATION_FAILED_MSG.format(key=key, reason=reason)
+            _logger.warning(message)
+            raise ValueError(message)
+        return value

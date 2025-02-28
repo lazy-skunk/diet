@@ -1,12 +1,15 @@
 import datetime
-from datetime import date
 
 from sqlalchemy.orm import validates
 
 from apps.extensions import sql_alchemy
+from apps.utils.singleton_logger import SingletonLogger
+from apps.utils.validation_helper import ValidationHelper
+
+_logger = SingletonLogger.get_logger()
 
 
-class BodyComposition(sql_alchemy.Model):
+class BodyComposition(sql_alchemy.Model):  # type: ignore
     id = sql_alchemy.Column(sql_alchemy.Integer, primary_key=True)
     date = sql_alchemy.Column(sql_alchemy.Date, nullable=False)
     weight = sql_alchemy.Column(sql_alchemy.Float, nullable=False)
@@ -30,10 +33,14 @@ class BodyComposition(sql_alchemy.Model):
 
     @validates("date")
     def validate_date(
-        self, _: str, input_date: datetime.date
+        self, key: str, input_date: datetime.date
     ) -> datetime.date:
-        if input_date > date.today():
-            raise AssertionError("今日以前の日付を選択してください。")
+        _logger.debug(f"Validating {key}: {key}={input_date}")
+
+        ValidationHelper.validate_not_none(key, input_date)
+        ValidationHelper.validate_date(key, input_date)
+
+        _logger.debug(f"Validation passed: {key}={input_date}")
         return input_date
 
     @validates("weight")
