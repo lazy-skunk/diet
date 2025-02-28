@@ -53,10 +53,9 @@ class ValidationHelper:
             raise ValueError(message)
 
     @staticmethod
-    def validate_date(key: str, value: datetime.date) -> datetime.date:
+    def validate_date(key: str, value: datetime.date) -> None:
         if value > date.today():
             reason = f"{value} is in the future and cannot be used."
             message = VALIDATION_FAILED_MSG.format(key=key, reason=reason)
             _logger.warning(message)
             raise ValueError(message)
-        return value
