@@ -53,5 +53,6 @@ disallow_untyped_defs = true
 [tool.djlint]
 profile = "jinja"
 max_line_length = 79
+max_blank_lines=1
 
 # Flake8 cannot be configured via pyproject.toml
