@@ -8,7 +8,7 @@ from wtforms.validators import DataRequired, NumberRange, Optional
 today = date.today()
 
 
-class LogBodyCompositionForm(FlaskForm):
+class RecordBodyCompositionForm(FlaskForm):
     date = DateField(
         validators=[DataRequired()],
         default=today,
