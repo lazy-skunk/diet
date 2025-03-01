@@ -10,7 +10,7 @@ _logger = CustomLogger.get_logger()
 class UserRepository:
     @staticmethod
     def create(user: User) -> None:
-        _logger.info("Start")
+        _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
 
         try:
             sql_alchemy.session.add(user)
@@ -20,7 +20,7 @@ class UserRepository:
             _logger.error(e, exc_info=True)
             raise
 
-        _logger.info("End")
+        _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
 
     @staticmethod
     def find_by_email(email: str) -> User | None:
@@ -32,5 +32,7 @@ class UserRepository:
             _logger.info(f"End: User not found - {email=}")
             return None
 
-        _logger.info(f"End: User found - {email=}")
+        _logger.info(
+            f"End: User found - {user.id=}, {user.username=}, {user.email=}"
+        )
         return user
