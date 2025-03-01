@@ -1,14 +1,14 @@
 {% extends "_base.html" %}
 
 {% block title %}
-  Record Body Composition - Diet App
+    Record Body Composition - Diet App
 {% endblock title %}
 
 {% block content %}
-  <h1>Record Your Body Composition</h1>
+    <h1>Record Your Body Composition</h1>
 
-  <form method="post"
-        action="{{ url_for('body_composition.record_body_composition') }}">
-    {% include "_form_fields.html" %}
-  </form>
+    <form method="post"
+          action="{{ url_for('body_composition.record_body_composition') }}">
+        {% include "_form_fields.html" %}
+    </form>
 {% endblock content %}

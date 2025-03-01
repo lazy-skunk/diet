@@ -1,17 +1,17 @@
 {% extends "_base.html" %}
 
 {% block title %}
-  Sign Up - Diet App
+    Sign Up - Diet App
 {% endblock title %}
 
 {% block content %}
-  <h1>Sign Up</h1>
+    <h1>Sign Up</h1>
 
-  <form method="post" action="{{ url_for('auth.signup') }}">
-    {% include "_form_fields.html" %}
-  </form>
+    <form method="post" action="{{ url_for('auth.signup') }}">
+        {% include "_form_fields.html" %}
+    </form>
 
-  <p>
-    Already a member? <a href="{{ url_for('auth.signin') }}">Sign in</a>
-  </p>
+    <p>
+        Already a member? <a href="{{ url_for('auth.signin') }}">Sign in</a>
+    </p>
 {% endblock content %}
