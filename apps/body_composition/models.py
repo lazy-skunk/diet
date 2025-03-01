@@ -64,10 +64,10 @@ class BodyComposition(sql_alchemy.Model):  # type: ignore
     def validate_body_fat(self, key: str, body_fat: float) -> float:
         _logger.debug(f"Start: {key=}, {body_fat=}")
 
-        ValidationUtil.validate_not_none(key, body_fat)
-        ValidationUtil.validate_number_range(
-            key, body_fat, _MIN_BODY_FAT, _MAX_BODY_FAT
-        )
+        if body_fat:
+            ValidationUtil.validate_number_range(
+                key, body_fat, _MIN_BODY_FAT, _MAX_BODY_FAT
+            )
 
         _logger.debug(f"End: {key=}, {body_fat=}")
         return body_fat
