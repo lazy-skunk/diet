@@ -20,11 +20,12 @@ def signup() -> str | Response:
     form = SignupForm()
 
     if form.validate_on_submit():
-        try:
-            new_user = UserService.create(
-                form.username.data, form.email.data, form.password.data
-            )
+        username = form.username.data
+        email = form.email.data
+        password = form.password.data
 
+        try:
+            new_user = UserService.create(username, email, password)
             login_user(new_user)
             flash("Signed up successfully.", "success")
             return redirect(
@@ -45,7 +46,10 @@ def signin() -> str | Response:
     form = SigninForm()
 
     if form.validate_on_submit():
-        user = UserService.authenticate(form.email.data, form.password.data)
+        email = form.email.data
+        password = form.password.data
+
+        user = UserService.authenticate(email, password)
 
         if user:
             login_user(user)
