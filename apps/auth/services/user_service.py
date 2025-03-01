@@ -15,7 +15,7 @@ class UserService:
         new_user = User(username=username, email=email)
         new_user.password_hash = generate_password_hash(password)
 
-        UserRepository.save(new_user)
+        UserRepository.create(new_user)
 
         _logger.info(
             f"End: {new_user.id=} {new_user.username=}, {new_user.email=}"

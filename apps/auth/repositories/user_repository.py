@@ -9,7 +9,7 @@ _logger = CustomLogger.get_logger()
 
 class UserRepository:
     @staticmethod
-    def save(user: User) -> None:
+    def create(user: User) -> None:
         _logger.info("Start")
 
         try:
