@@ -25,18 +25,18 @@ class User(sql_alchemy.Model, UserMixin):  # type: ignore
 
     @validates("username")
     def validate_username(self, key: str, username: str) -> str:
-        _logger.debug(f"Start: {key}={username}")
+        _logger.debug(f"Start: {key=}, {username=}")
 
         ValidationUtil.validate_not_none(key, username)
         username = username.strip()
         ValidationUtil.validate_not_empty(key, username)
 
-        _logger.debug(f"End: {key}={username}")
+        _logger.debug(f"End: {key=}, {username=}")
         return username
 
     @validates("email")
     def validate_email(self, key: str, email: str) -> str:
-        _logger.debug(f"Start: {key}={email}")
+        _logger.debug(f"Start: {key=}, {email=}")
 
         ValidationUtil.validate_not_none(key, email)
         email = email.strip().lower()
@@ -45,5 +45,5 @@ class User(sql_alchemy.Model, UserMixin):  # type: ignore
         ValidationUtil.validate_by_max_length(key, email, _MAX_EMAIL_LENGTH)
         ValidationUtil.validate_unique(User, key, email)
 
-        _logger.debug(f"End: {key}={email}")
+        _logger.debug(f"End: {key=}, {email=}")
         return email

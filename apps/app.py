@@ -92,12 +92,12 @@ def _register_error_handlers(app: Flask) -> None:
 
 
 def _page_not_found(e: Any) -> tuple[str, int]:
-    _logger.info(f"404 Not Found: {request.path}")
+    _logger.info(f"404 Not Found: {request=}")
     return render_template("404.html"), 404
 
 
 def _internal_server_error(e: Any) -> tuple[str, int]:
     _logger.error(
-        f"500 Internal Server Error: {request.path}, Error: {e}", exc_info=True
+        f"500 Internal Server Error: {e=}, {request=}", exc_info=True
     )
     return render_template("500.html"), 500

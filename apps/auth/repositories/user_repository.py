@@ -24,13 +24,13 @@ class UserRepository:
 
     @staticmethod
     def find_by_email(email: str) -> User | None:
-        _logger.info(f"Start: {email}")
+        _logger.info(f"Start: {email=}")
 
         user: User | None = User.query.filter_by(email=email).first()
 
         if not user:
-            _logger.info(f"End: User not found - {email}")
+            _logger.info(f"End: User not found - {email=}")
             return None
 
-        _logger.info(f"End: User found - {email}")
+        _logger.info(f"End: User found - {email=}")
         return user

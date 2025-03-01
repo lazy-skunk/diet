@@ -11,10 +11,6 @@
 {% endblock extra_js %}
 
 {% block content %}
-  {% if not current_user.is_authenticated %}
-    <p>Displaying sample data.</p>
-  {% endif %}
-
   <div class="row mb-3">
     <div class="col-6">
       <div class="form-floating">
