@@ -40,34 +40,34 @@ class BodyComposition(sql_alchemy.Model):  # type: ignore
     def validate_date(
         self, key: str, input_date: datetime.date
     ) -> datetime.date:
-        _logger.debug(f"Validating {key}: {key}={input_date}")
+        _logger.debug(f"Start: {key=}, {input_date=}")
 
         ValidationUtil.validate_not_none(key, input_date)
         ValidationUtil.validate_date(key, input_date)
 
-        _logger.debug(f"Validation passed: {key}={input_date}")
+        _logger.debug(f"End: {key=}, {input_date=}")
         return input_date
 
     @validates("weight")
     def validate_weight(self, key: str, weight: float) -> float:
-        _logger.debug(f"Validating {key}: {key}={weight}")
+        _logger.debug(f"Start: {key=}, {weight=}")
 
         ValidationUtil.validate_not_none(key, weight)
         ValidationUtil.validate_number_range(
             key, weight, _MIN_WEIGHT, _MAX_WEIGHT
         )
 
-        _logger.debug(f"Validation passed: {key}={weight}")
+        _logger.debug(f"End: {key=}, {weight=}")
         return weight
 
     @validates("body_fat")
     def validate_body_fat(self, key: str, body_fat: float) -> float:
-        _logger.debug(f"Validating {key}: {key}={body_fat}")
+        _logger.debug(f"Start: {key=}, {body_fat=}")
 
         ValidationUtil.validate_not_none(key, body_fat)
         ValidationUtil.validate_number_range(
             key, body_fat, _MIN_BODY_FAT, _MAX_BODY_FAT
         )
 
-        _logger.debug(f"Validation passed: {key}={body_fat}")
+        _logger.debug(f"End: {key=}, {body_fat=}")
         return body_fat
