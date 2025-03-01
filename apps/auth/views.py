@@ -27,7 +27,6 @@ def signup() -> str | Response:
 
             login_user(new_user)
             flash("Signed up successfully.", "success")
-            # return redirect(url_for("main.index"))
             return redirect(
                 url_for("body_composition.record_body_composition")
             )
