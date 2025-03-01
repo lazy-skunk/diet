@@ -11,7 +11,7 @@ _DEFAULT_LOG_SIZE = 1024 * 1024 * 10
 _DEFAULT_LOG_BACKUP = 3
 
 
-class SingletonLogger:
+class CustomLogger:
     _logger: Logger | None = None
 
     @classmethod
@@ -35,7 +35,7 @@ class SingletonLogger:
             DirectoryUtil.ensure_directory(log_path)
 
             formatter = Formatter(
-                "%(asctime)s - %(levelname)s - %(message)s",
+                "%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s",  # noqa E501
                 datefmt="%Y-%m-%d %H:%M:%S",
             )
             cls._add_stream_handler(log_level, formatter)
