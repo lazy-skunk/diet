@@ -17,6 +17,8 @@
             </div>
         </div>
     {% endif %}
-{% endfor %}
 
-<div class="mb-3">{{ form.submit() }}</div>
+    {% if field.type == "SubmitField" %}
+        <div class="mb-3">{{ field() }}</div>
+    {% endif %}
+{% endfor %}

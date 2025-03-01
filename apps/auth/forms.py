@@ -14,11 +14,18 @@ class BaseAuthForm(FlaskForm):
     )
 
     def _order_fields(self, order: list[str]) -> None:
+        original_fields = self._fields  # type: ignore
+
         ordered_fields = {
             field_name: self._fields[field_name]  # type: ignore
             for field_name in order
             if field_name in self._fields  # type: ignore
         }
+
+        for field_name in original_fields.keys():
+            if field_name not in ordered_fields:
+                ordered_fields[field_name] = original_fields[field_name]
+
         self._fields = ordered_fields
 
 
@@ -31,7 +38,7 @@ class SignupForm(BaseAuthForm):
         validators=[DataRequired(), EqualTo("password")],
         render_kw={"class": "form-control", "autocomplete": "new-password"},
     )
-    submit = SubmitField(
+    sign_up = SubmitField(
         render_kw={"class": "btn btn-primary"},
     )
 
@@ -43,18 +50,16 @@ class SignupForm(BaseAuthForm):
         self.password.render_kw["autocomplete"] = "new-password"
 
         order = [
-            "csrf_token",
             "username",
             "email",
             "password",
             "confirm_password",
-            "submit",
         ]
         self._order_fields(order)
 
 
 class SigninForm(BaseAuthForm):
-    submit = SubmitField(
+    sign_in = SubmitField(
         render_kw={"class": "btn btn-primary"},
     )
 
