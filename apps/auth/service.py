@@ -1,7 +1,7 @@
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from apps.auth.models import User
-from apps.auth.repositories.user_repository import UserRepository
+from apps.auth.repository import UserRepository
 from apps.utils.custom_logger import CustomLogger
 
 _logger = CustomLogger.get_logger()

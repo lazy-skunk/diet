@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.wrappers import Response
 
 from apps.auth.forms import SigninForm, SignupForm
-from apps.auth.services.user_service import UserService
+from apps.auth.service import UserService
 
 blueprint = Blueprint(
     "auth",
