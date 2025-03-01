@@ -33,8 +33,13 @@ class UserService:
             return None
 
         if check_password_hash(user.password_hash, password):
-            _logger.info(f"End: succeeded - {email=}")
+            _logger.info(
+                f"End: succeeded - {user.id=}, {user.username=}, {user.email=}"
+            )
             return user
         else:
-            _logger.info(f"End: failed (Invalid credentials) - {email=}")
+            _logger.info(
+                f"End: failed (Invalid credentials) - {user.id=}"
+                f", {user.username=}, {user.email=}"
+            )
             return None
