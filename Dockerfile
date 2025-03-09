@@ -9,10 +9,9 @@ RUN apt-get update \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
-COPY pyproject.toml .
-RUN pip install .[dev]
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="/root/.local/bin:$PATH"
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --no-root --with dev
 
 COPY . .
-
-ENTRYPOINT ["bash"]

@@ -18,7 +18,6 @@
         },
         "editor.formatOnSave": true
     },
-    "python.defaultInterpreterPath": "usr/local/bin/python",
     "python.testing.pytestEnabled": true,
     "mypy-type-checker.args": [
         "--config-file=pyproject.toml"

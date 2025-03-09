@@ -1,40 +1,36 @@
-[build-system]
-requires = ["setuptools >= 61.0"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "diet"
+name = "app"
 version = "0.1.0"
-dependencies = [
-  "flask",
-  "flask_login",
-  "flask_sqlalchemy",
-  "python-dotenv",
-  "pandas",
-  "flask_wtf[email]",
-  "flask_migrate",
-]
-requires-python = ">= 3.12"
+description = ""
 authors = [
-  {name = "lazy_skunk"}
+    {name = "Your Name",email = "you@example.com"}
 ]
-maintainers = [
-  {name = "lazy_skunk"}
-]
-description = "diet"
 readme = "README.md"
-
-[project.optional-dependencies]
-dev = [
-  "pytest",
-  "pytest-cov",
-  "black",
-  "flake8",
-  "isort",
-  "mypy",
-  "djlint",
-  "flask-debugtoolbar",
+requires-python = ">=3.12"
+dependencies = [
+    "flask (>=3.1.0,<4.0.0)",
+    "flask-login (>=0.6.3,<0.7.0)",
+    "flask-sqlalchemy (>=3.1.1,<4.0.0)",
+    "python-dotenv (>=1.0.1,<2.0.0)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "flask-wtf[email] (>=1.2.2,<2.0.0)",
+    "flask-migrate (>=4.1.0,<5.0.0)"
 ]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-cov = "^6.0.0"
+black = "^25.1.0"
+flake8 = "^7.1.2"
+isort = "^6.0.1"
+mypy = "^1.15.0"
+djlint = "^1.36.4"
+flask-debugtoolbar = "^0.16.0"
 
 [tool.pytest.ini_options]
 addopts = "--cov=src --cov-config=.coveragerc --cov-report=html"
