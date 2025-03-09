@@ -12,8 +12,9 @@ class UserRepository:
     def create(user: User) -> None:
         _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
 
+        sql_alchemy.session.add(user)
+
         try:
-            sql_alchemy.session.add(user)
             sql_alchemy.session.commit()
         except SQLAlchemyError as e:
             sql_alchemy.session.rollback()
