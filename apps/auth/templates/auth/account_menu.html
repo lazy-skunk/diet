@@ -1,0 +1,21 @@
+{% extends "_base.html" %}
+
+{% block title %}
+    Account Menu - Diet App
+{% endblock title %}
+
+{% block content %}
+    <h1>Account Menu</h1>
+    <div class="row">
+        <div class="col-6">
+            <div class="list-group">
+                <a href="{{ url_for('auth.account_info') }}"
+                   class="list-group-item list-group-item-action">Account Information</a>
+                <a href="{{ url_for('auth.change_password') }}"
+                   class="list-group-item list-group-item-action">Change Password</a>
+                <a href="{{ url_for('auth.deactivate_account') }}"
+                   class="list-group-item list-group-item-action">Deactivate Account</a>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

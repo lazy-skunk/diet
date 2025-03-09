@@ -3,7 +3,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.wrappers import Response
 
-from apps.auth.forms import SigninForm, SignupForm
+from apps.auth.forms import ChangePasswordForm, SigninForm, SignupForm
 from apps.auth.service import UserService
 
 blueprint = Blueprint(
@@ -36,9 +36,7 @@ def signup() -> str | Response:
         except SQLAlchemyError:
             flash("Sign-up failed. Please try again later.", "danger")
 
-    return render_template(
-        "auth/signup.html", form=form, current_user=current_user
-    )
+    return render_template("auth/signup.html", form=form)
 
 
 @blueprint.route("/signin", methods=["GET", "POST"])
@@ -58,9 +56,7 @@ def signin() -> str | Response:
 
         flash("Sign-in failed. Invalid email or password.", "danger")
 
-    return render_template(
-        "auth/signin.html", form=form, current_user=current_user
-    )
+    return render_template("auth/signin.html", form=form)
 
 
 @blueprint.route("/signout")
@@ -69,3 +65,43 @@ def signout() -> Response:
     logout_user()
     flash("Signed out successfully.", "success")
     return redirect(url_for("main.index"))
+
+
+@blueprint.route("/account_menu", methods=["GET"])
+@login_required
+def account_menu() -> str:
+    return render_template("auth/account_menu.html")
+
+
+@blueprint.route("/account_info", methods=["GET"])
+@login_required
+def account_info() -> str:
+    # TODO: 未実装
+    return render_template("auth/account_info.html")
+
+
+@blueprint.route("/change_password", methods=["GET", "POST"])
+@login_required
+def change_password() -> str | Response:
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        current_password = form.current_password.data
+        new_password = form.new_password.data
+        is_succeeded = UserService.change_password(
+            current_user, current_password, new_password
+        )
+
+        if is_succeeded:
+            flash("Password changed successfully.", "success")
+            return redirect(url_for("main.index"))
+        else:
+            flash("Invalid current password.", "danger")
+
+    return render_template("auth/change_password.html", form=form)
+
+
+@blueprint.route("/deactivate_account", methods=["GET"])
+@login_required
+def deactivate_account() -> str | Response:
+    # TODO: 未実装
+    return render_template("auth/deactivate_account.html")

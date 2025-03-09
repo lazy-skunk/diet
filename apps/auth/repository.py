@@ -23,6 +23,19 @@ class UserRepository:
         _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
 
     @staticmethod
+    def update(user: User) -> None:
+        _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
+
+        try:
+            sql_alchemy.session.commit()
+        except SQLAlchemyError as e:
+            sql_alchemy.session.rollback()
+            _logger.error(e, exc_info=True)
+            raise
+
+        _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
+
+    @staticmethod
     def find_by_email(email: str) -> User | None:
         _logger.info(f"Start: {email=}")
 
@@ -35,4 +48,13 @@ class UserRepository:
         _logger.info(
             f"End: User found - {user.id=}, {user.username=}, {user.email=}"
         )
+        return user
+
+    @staticmethod
+    def find_by_id(id: str) -> User:
+        _logger.info(f"Start: {id=}")
+
+        user: User = User.query.filter_by(id=id).first()
+
+        _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
         return user

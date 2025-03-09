@@ -1,3 +1,5 @@
+from typing import Any
+
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
@@ -69,3 +71,24 @@ class SigninForm(BaseAuthForm):
 
     def _post_init(self) -> None:
         self.password.render_kw["autocomplete"] = "current-password"
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField(
+        validators=[DataRequired()],
+        render_kw={
+            "class": "form-control",
+            "autocomplete": "current-password",
+        },
+    )
+    new_password = PasswordField(
+        validators=[DataRequired()],
+        render_kw={"class": "form-control", "autocomplete": "new-password"},
+    )
+    confirm_new_password = PasswordField(
+        validators=[DataRequired(), EqualTo("new_password")],
+        render_kw={"class": "form-control", "autocomplete": "new-password"},
+    )
+    change_password = SubmitField(
+        render_kw={"class": "btn btn-primary"},
+    )

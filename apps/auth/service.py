@@ -1,3 +1,4 @@
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from apps.auth.models import User
@@ -43,3 +44,25 @@ class UserService:
                 f", {user.username=}, {user.email=}"
             )
             return None
+
+    @staticmethod
+    def change_password(
+        user: User, current_password: str, new_password: str
+    ) -> bool:
+        _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
+
+        if not check_password_hash(user.password_hash, current_password):
+            _logger.info(
+                f"End: failed (Invalid credentials) - {user.id=}"
+                f", {user.username=}, {user.email=}"
+            )
+            return False
+
+        try:
+            user.password_hash = generate_password_hash(new_password)
+            UserRepository.update(user)
+            _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")
+            return True
+        except SQLAlchemyError as e:
+            _logger.error(e, exc_info=True)
+            return False
