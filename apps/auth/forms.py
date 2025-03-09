@@ -92,3 +92,13 @@ class ChangePasswordForm(FlaskForm):
     change_password = SubmitField(
         render_kw={"class": "btn btn-primary"},
     )
+
+
+class AccountInformationForm(FlaskForm):
+    username = StringField(
+        validators=[DataRequired(), Length(min=1, max=255)],
+        render_kw={"class": "form-control", "autocomplete": "username"},
+    )
+    update = SubmitField(
+        render_kw={"class": "btn btn-primary"},
+    )

@@ -1,0 +1,13 @@
+{% extends "_base.html" %}
+
+{% block title %}
+    Account Information - Diet App
+{% endblock title %}
+
+{% block content %}
+    <h1>Account Information</h1>
+
+    <form method="post" action="{{ url_for('auth.account_information') }}">
+        {% include "_form_fields.html" %}
+    </form>
+{% endblock content %}

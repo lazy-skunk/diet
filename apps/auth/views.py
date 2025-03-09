@@ -3,7 +3,12 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.wrappers import Response
 
-from apps.auth.forms import ChangePasswordForm, SigninForm, SignupForm
+from apps.auth.forms import (
+    AccountInformationForm,
+    ChangePasswordForm,
+    SigninForm,
+    SignupForm,
+)
 from apps.auth.service import UserService
 
 blueprint = Blueprint(
@@ -73,11 +78,24 @@ def account_menu() -> str:
     return render_template("auth/account_menu.html")
 
 
-@blueprint.route("/account_info", methods=["GET"])
+@blueprint.route("/account_information", methods=["GET", "POST"])
 @login_required
-def account_info() -> str:
+def account_information() -> str:
+    form = AccountInformationForm()
+    if form.validate_on_submit():
+        new_username = form.username.data
+        UserService.change_username(current_user, new_username)
+        flash("Usename changed successfully.", "success")
+
+    form.username.data = current_user.username
+    return render_template("auth/account_information.html", form=form)
+
+
+@blueprint.route("/change_email", methods=["GET"])
+@login_required
+def change_email() -> str | Response:
     # TODO: 未実装
-    return render_template("auth/account_info.html")
+    return render_template("auth/change_email.html")
 
 
 @blueprint.route("/change_password", methods=["GET", "POST"])
@@ -93,7 +111,7 @@ def change_password() -> str | Response:
 
         if is_succeeded:
             flash("Password changed successfully.", "success")
-            return redirect(url_for("main.index"))
+            return render_template("auth/account_menu.html")
         else:
             flash("Invalid current password.", "danger")
 

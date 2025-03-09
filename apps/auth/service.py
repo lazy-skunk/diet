@@ -66,3 +66,16 @@ class UserService:
         except SQLAlchemyError as e:
             _logger.error(e, exc_info=True)
             return False
+
+    @staticmethod
+    def change_username(user: User, new_username: str) -> bool:
+        _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
+
+        try:
+            user.username = new_username
+            UserRepository.update(user)
+            _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")
+            return True
+        except SQLAlchemyError as e:
+            _logger.error(e, exc_info=True)
+            return False
