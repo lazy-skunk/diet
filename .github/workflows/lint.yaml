@@ -15,7 +15,7 @@ jobs:
         uses: ./.github/actions/setup-python-env
 
       - name: Format check with Ruff
-        run: uv run ruff format --check --config=pyproject.toml .
+        run: uv run --no-sync ruff format --check --config=pyproject.toml .
 
       - name: Lint check with Ruff
-        run: uv run ruff check --output-format=github --config=pyproject.toml .
+        run: uv run --no-sync ruff check --output-format=github --config=pyproject.toml .
