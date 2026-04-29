@@ -12,3 +12,9 @@ docker compose down --rmi all
 ```bash
 flask run
 ```
+
+## Git
+
+```bash
+git branch --merged main | grep -vE '^\*| main$' | xargs -r git branch -d
+```
