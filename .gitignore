@@ -1,10 +1,8 @@
-.mypy_cache
-.pytest_cache
-__pycache__
 build
-*.egg-info
-/log
+htmlcov
+log
 .coverage
 .env
-commands.txt
+*cache*
+*.egg-info
 *.sqlite
