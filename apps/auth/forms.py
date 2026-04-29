@@ -1,5 +1,3 @@
-from typing import Any
-
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
@@ -24,7 +22,7 @@ class BaseAuthForm(FlaskForm):
             if field_name in self._fields  # type: ignore
         }
 
-        for field_name in original_fields.keys():
+        for field_name in original_fields:
             if field_name not in ordered_fields:
                 ordered_fields[field_name] = original_fields[field_name]
 
