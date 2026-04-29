@@ -20,5 +20,5 @@ runs:
         enable-cache: true
 
     - name: Sync dependencies
-      run: uv sync --frozen --group dev
+      run: uv sync --frozen --no-install-project --group dev
       shell: bash
