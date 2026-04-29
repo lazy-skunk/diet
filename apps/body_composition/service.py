@@ -115,7 +115,7 @@ class BodyCompositionService:
 
     @staticmethod
     def _prepare_body_composition_dataframe(
-        body_composition_dicts: list[dict[str, str | float]]
+        body_composition_dicts: list[dict[str, str | float]],
     ) -> DataFrame:
         body_composition_df = pd.DataFrame(body_composition_dicts)
         body_composition_df["date"] = pd.to_datetime(
