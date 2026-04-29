@@ -1,0 +1,18 @@
+name: Test Workflow
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: ./.github/actions/setup-python-env
+
+      - name: Run tests
+        run: uv run pytest

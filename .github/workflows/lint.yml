@@ -1,0 +1,21 @@
+name: Lint Workflow
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Run Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: ./.github/actions/setup-python-env
+
+      - name: Format check with Ruff
+        run: uv run ruff format --check --config=pyproject.toml .
+
+      - name: Lint check with Ruff
+        run: uv run ruff check --output-format=github --config=pyproject.toml .
