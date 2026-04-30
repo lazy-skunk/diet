@@ -11,7 +11,7 @@ from flask_login import current_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.wrappers import Response
 
-from apps.body_composition.service import BodyCompositionService
+from diet.body_composition.service import BodyCompositionService
 
 from .forms import RecordBodyCompositionForm
 

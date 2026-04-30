@@ -3,7 +3,7 @@ import os
 from logging import Formatter, Logger, StreamHandler
 from logging.handlers import RotatingFileHandler
 
-from apps.utils.directory_util import DirectoryUtil
+from diet.utils.directory_util import DirectoryUtil
 
 _DEFAULT_LOG_LEVEL = logging.DEBUG
 _DEFAULT_LOG_PATH = "log/app.log"

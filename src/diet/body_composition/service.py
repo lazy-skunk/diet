@@ -6,9 +6,9 @@ from datetime import timedelta
 import pandas as pd
 from pandas import DataFrame
 
-from apps.body_composition.models import BodyComposition
-from apps.body_composition.repository import BodyCompositionRepository
-from apps.utils.custom_logger import CustomLogger
+from diet.body_composition.models import BodyComposition
+from diet.body_composition.repository import BodyCompositionRepository
+from diet.utils.custom_logger import CustomLogger
 
 _logger = CustomLogger.get_logger()
 

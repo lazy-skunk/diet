@@ -3,13 +3,13 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.wrappers import Response
 
-from apps.auth.forms import (
+from diet.auth.forms import (
     AccountInformationForm,
     ChangePasswordForm,
     SigninForm,
     SignupForm,
 )
-from apps.auth.service import UserService
+from diet.auth.service import UserService
 
 blueprint = Blueprint(
     "auth",
@@ -31,15 +31,16 @@ def signup() -> str | Response:
 
         try:
             new_user = UserService.create(username, email, password)
-            login_user(new_user)
-            flash("Signed up successfully.", "success")
-            return redirect(
-                url_for("body_composition.record_body_composition")
-            )
         except (ValueError, TypeError) as e:
             flash(str(e), "danger")
+            return render_template("auth/signup.html", form=form)
         except SQLAlchemyError:
             flash("Sign-up failed. Please try again later.", "danger")
+            return render_template("auth/signup.html", form=form)
+
+        login_user(new_user)
+        flash("Signed up successfully.", "success")
+        return redirect(url_for("body_composition.record_body_composition"))
 
     return render_template("auth/signup.html", form=form)
 
@@ -84,8 +85,12 @@ def account_information() -> str:
     form = AccountInformationForm()
     if form.validate_on_submit():
         new_username = form.username.data
-        UserService.change_username(current_user, new_username)
-        flash("Usename changed successfully.", "success")
+        is_succeeded = UserService.change_username(current_user, new_username)
+
+        if is_succeeded:
+            flash("Usename changed successfully.", "success")
+        else:
+            flash("Usename change failed.", "danger")
 
     form.username.data = current_user.username
     return render_template("auth/account_information.html", form=form)

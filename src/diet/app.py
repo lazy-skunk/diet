@@ -6,9 +6,9 @@ from flask_debugtoolbar import DebugToolbarExtension
 from flask_login import current_user
 from flask_migrate import Migrate
 
-from apps.config import config
-from apps.extensions import csrf_protect, login_manager, sql_alchemy
-from apps.utils.custom_logger import CustomLogger
+from diet.config import config
+from diet.extensions import csrf_protect, login_manager, sql_alchemy
+from diet.utils.custom_logger import CustomLogger
 
 _logger = CustomLogger.get_logger()
 
@@ -61,7 +61,7 @@ def _init_login_manager(app: Flask) -> None:
 
 
 def _register_user_loader() -> None:
-    from apps.auth.models import User
+    from diet.auth.models import User
 
     @login_manager.user_loader
     def load_user(user_id: str) -> User:
@@ -69,11 +69,11 @@ def _register_user_loader() -> None:
 
 
 def _register_blueprints(app: Flask) -> None:
-    from apps.auth.views import blueprint as auth_blueprint
-    from apps.body_composition.views import (
+    from diet.auth.views import blueprint as auth_blueprint
+    from diet.body_composition.views import (
         blueprint as body_composition_blueprint,
     )
-    from apps.views import blueprint as main_blueprint
+    from diet.views import blueprint as main_blueprint
 
     app.register_blueprint(main_blueprint)
     app.register_blueprint(auth_blueprint)

@@ -1,9 +1,9 @@
 from flask_login import UserMixin
 from sqlalchemy.orm import validates
 
-from apps.extensions import sql_alchemy
-from apps.utils.custom_logger import CustomLogger
-from apps.utils.validation_util import ValidationUtil
+from diet.extensions import sql_alchemy
+from diet.utils.custom_logger import CustomLogger
+from diet.utils.validation_util import ValidationUtil
 
 _logger = CustomLogger.get_logger()
 
@@ -43,7 +43,7 @@ class User(sql_alchemy.Model, UserMixin):  # type: ignore
         ValidationUtil.validate_not_empty(key, email)
         ValidationUtil.validate_by_regexp(key, email, _EMAIL_REGEXP)
         ValidationUtil.validate_by_max_length(key, email, _MAX_EMAIL_LENGTH)
-        ValidationUtil.validate_unique(User, key, email)
+        # ValidationUtil.validate_unique(User, key, email)
 
         _logger.debug(f"End: {key=}, {email=}")
         return email
