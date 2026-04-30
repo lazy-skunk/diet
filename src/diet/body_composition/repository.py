@@ -2,9 +2,9 @@ import datetime
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from apps.body_composition.models import BodyComposition
-from apps.extensions import sql_alchemy
-from apps.utils.custom_logger import CustomLogger
+from diet.body_composition.models import BodyComposition
+from diet.extensions import sql_alchemy
+from diet.utils.custom_logger import CustomLogger
 
 _logger = CustomLogger.get_logger()
 

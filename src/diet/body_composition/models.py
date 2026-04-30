@@ -2,9 +2,9 @@ import datetime
 
 from sqlalchemy.orm import validates
 
-from apps.extensions import sql_alchemy
-from apps.utils.custom_logger import CustomLogger
-from apps.utils.validation_util import ValidationUtil
+from diet.extensions import sql_alchemy
+from diet.utils.custom_logger import CustomLogger
+from diet.utils.validation_util import ValidationUtil
 
 _logger = CustomLogger.get_logger()
 

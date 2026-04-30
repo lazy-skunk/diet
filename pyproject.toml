@@ -53,8 +53,8 @@ fixable = ["ALL"]
 max-complexity = 7
 
 [tool.pytest.ini_options]
-addopts = "--cov=apps --cov-config=.coveragerc --cov-report=html"
-pythonpath = ["."]
+addopts = "--cov=diet --cov-config=.coveragerc --cov-report=html"
+pythonpath = ["src"]
 testpaths = ["tests"]
 
 [tool.mypy]

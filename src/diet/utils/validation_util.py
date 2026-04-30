@@ -1,9 +1,8 @@
 import datetime
 import re
 from datetime import date
-from typing import Any
 
-from apps.utils.custom_logger import CustomLogger
+from diet.utils.custom_logger import CustomLogger
 
 _logger = CustomLogger.get_logger()
 
@@ -39,15 +38,6 @@ class ValidationUtil:
     def validate_by_max_length(key: str, value: str, max_length: int) -> None:
         if len(value) > max_length:
             reason = f"Exceeds max length ({max_length} characters)"
-            message = _VALIDATION_FAILED_MSG.format(key=key, reason=reason)
-            _logger.warning(message)
-            raise ValueError(message)
-
-    @staticmethod
-    def validate_unique(model: Any, key: str, value: str) -> None:
-        exists = model.query.filter(getattr(model, key) == value).first()
-        if exists:
-            reason = f"{value} cannot be used"
             message = _VALIDATION_FAILED_MSG.format(key=key, reason=reason)
             _logger.warning(message)
             raise ValueError(message)

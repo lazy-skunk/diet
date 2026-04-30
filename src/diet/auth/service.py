@@ -1,9 +1,9 @@
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from apps.auth.models import User
-from apps.auth.repository import UserRepository
-from apps.utils.custom_logger import CustomLogger
+from diet.auth.models import User
+from diet.auth.repository import UserRepository
+from diet.utils.custom_logger import CustomLogger
 
 _logger = CustomLogger.get_logger()
 
@@ -79,3 +79,12 @@ class UserService:
         except SQLAlchemyError as e:
             _logger.error(e, exc_info=True)
             return False
+
+    # @staticmethod
+    # def validate_unique(model: Any, key: str, value: str) -> None:
+    #     exists = model.query.filter(getattr(model, key) == value).first()
+    #     if exists:
+    #         reason = f"{value} cannot be used"
+    #         message = _VALIDATION_FAILED_MSG.format(key=key, reason=reason)
+    #         _logger.warning(message)
+    #         raise ValueError(message)
