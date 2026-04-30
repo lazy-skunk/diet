@@ -1,4 +1,4 @@
-name: Lint Workflow
+name: Lint
 
 on:
   push:
@@ -6,16 +6,17 @@ on:
 
 jobs:
   lint:
-    name: Run Ruff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: ./.github/actions/setup-python-env
+      - uses: ./.github/actions/setup-python-env
 
       - name: Format check with Ruff
-        run: uv run --no-sync ruff format --check --config=pyproject.toml .
+        run: uv run --frozen --no-sync ruff format --check .
 
       - name: Lint check with Ruff
-        run: uv run --no-sync ruff check --output-format=github --config=pyproject.toml .
+        run: uv run --frozen --no-sync ruff check --output-format=github .
+
+      - name: Type check with mypy
+        run: uv run --frozen --no-sync mypy src tests

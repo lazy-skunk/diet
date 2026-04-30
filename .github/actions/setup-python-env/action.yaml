@@ -2,23 +2,10 @@ name: Setup Python Env
 
 description: Setup Python Env
 
-inputs:
-  python-version:
-    required: false
-    default: 3.12
-
 runs:
   using: composite
   steps:
-    - uses: actions/setup-python@v5
-      with:
-        python-version: ${{ inputs.python-version }}
+    - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        enable-cache: true
-
-    - name: Sync dependencies
-      run: uv sync --frozen --no-install-project --group dev
+    - run: uv sync --frozen --no-install-project
       shell: bash
