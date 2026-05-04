@@ -8,3 +8,4 @@ services:
       - ~/.gitconfig:/root/.gitconfig
     stdin_open: true
     tty: true
+    command: uv run flask run
