@@ -6,6 +6,8 @@ services:
     volumes:
       - .:/app
       - ~/.gitconfig:/root/.gitconfig
+    ports:
+      - "5000:5000"
+    command: uv run flask run --host=0.0.0.0
     stdin_open: true
     tty: true
-    command: uv run flask run
