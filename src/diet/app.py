@@ -73,11 +73,15 @@ def _register_blueprints(app: Flask) -> None:
     from diet.body_composition.views import (
         blueprint as body_composition_blueprint,
     )
+    from diet.nutrition_optimizer.views import (
+        blueprint as nutrition_optimizer_blueprint,
+    )
     from diet.views import blueprint as main_blueprint
 
     app.register_blueprint(main_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(body_composition_blueprint)
+    app.register_blueprint(nutrition_optimizer_blueprint)
 
 
 def _register_request_hooks(app: Flask) -> None:

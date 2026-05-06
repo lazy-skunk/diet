@@ -1,0 +1,82 @@
+<h2>Constraints</h2>
+<table class="table table-bordered table-striped" id="constraint-table">
+    <thead class="table-dark">
+        <tr>
+            <th scope="col">Min/Max</th>
+            <th scope="col">Nutrient</th>
+            <th scope="col">Unit</th>
+            <th scope="col">Value</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody id="constraint-inputs">
+        <tr>
+            <td>
+                <select class="form-select" name="constraint-min-max">
+                    <option value="min">Minimum</option>
+                    <option value="max">Maximum</option>
+                </select>
+            </td>
+            <td>
+                <select class="form-select" name="constraint-nutrient">
+                    <option value="energy">Energy</option>
+                    <option value="protein">Protein</option>
+                    <option value="fat">Fat</option>
+                    <option value="carbohydrates">Carbohydrates</option>
+                </select>
+            </td>
+            <td>
+                <select class="form-select" name="constraint-unit" disabled>
+                    <option value="energy">kcal</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" class="form-control" name="constraint-value" />
+            </td>
+            <td class="no-action"></td>
+        </tr>
+    </tbody>
+</table>
+
+<button type="button" id="add-constraint" class="btn btn-outline-primary">
+    Add Constraint
+</button>
+
+<template id="constraint-template">
+    <tr>
+        <td>
+            <select class="form-select" name="constraint-min-max">
+                <option value="min">Minimum</option>
+                <option value="max">Maximum</option>
+            </select>
+        </td>
+        <td>
+            <select class="form-select" name="constraint-nutrient">
+                <option value="energy">Energy</option>
+                <option value="protein">Protein</option>
+                <option value="fat">Fat</option>
+                <option value="carbohydrates">Carbohydrates</option>
+            </select>
+        </td>
+        <td>
+            <select class="form-select" name="constraint-unit" disabled>
+                <option value="energy">kcal</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" class="form-control" name="constraint-value" />
+        </td>
+        <td>
+            <button type="button" class="btn btn-outline-danger">Remove</button>
+        </td>
+    </tr>
+</template>
+
+<template id="unit-options-energy">
+    <option value="energy">kcal</option>
+</template>
+
+<template id="unit-options-amount-ratio">
+    <option value="amount">g</option>
+    <option value="ratio">%</option>
+</template>

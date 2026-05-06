@@ -1,0 +1,28 @@
+{% extends "_base.html" %}
+
+{% block title %}
+    Nutrition Optimizer
+{% endblock title %}
+
+{% block extra_css %}
+    <link rel="stylesheet"
+          href="{{ url_for('nutrition_optimizer.static', filename='nutrition_optimizer.css') }}" />
+{% endblock extra_css %}
+
+{% block extra_js %}
+    <script src="https://code.highcharts.com/highcharts.js" defer></script>
+    <script type="module"
+            src="{{ url_for('nutrition_optimizer.static', filename='nutritionOptimizerMain.js') }}"></script>
+{% endblock extra_js %}
+
+{% block content %}
+    <div class="mb-3">
+        {% include "nutrition_optimizer/_food_information.html" %}
+    </div>
+    <div class="mb-3">{% include "nutrition_optimizer/_objective.html" %}</div>
+    <div class="mb-3">{% include "nutrition_optimizer/_constraints.html" %}</div>
+    <div class="mb-3 d-flex justify-content-center">
+        {% include "nutrition_optimizer/_optimize_button.html" %}
+    </div>
+    <div>{% include "nutrition_optimizer/_results.html" %}</div>
+{% endblock content %}

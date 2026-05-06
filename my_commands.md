@@ -4,7 +4,7 @@
 docker compose build --no-cache
 docker compose up -d
 docker compose stop
-docker compose down --rmi all
+docker compose down --rmi all --volumes
 ```
 
 ## Flask
