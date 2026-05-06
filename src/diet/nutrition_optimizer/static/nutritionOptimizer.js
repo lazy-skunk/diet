@@ -256,6 +256,15 @@ function clearCharts() {
     pfcRatioChart.textContent = "";
 }
 
+function getCsrfToken() {
+    const csrfTokenMeta = document.querySelector("meta[name='csrf-token']");
+    if (!(csrfTokenMeta instanceof HTMLMetaElement)) {
+        throw new Error("CSRF token is missing");
+    }
+
+    return csrfTokenMeta.content;
+}
+
 function handleOptimizationResult(result) {
     if (result.status === "Optimal") {
         drawPFCRatioWithTotalEnergy(
@@ -275,7 +284,10 @@ export async function optimize() {
         const optimizeButton = getElementByIdOrThrow("optimize");
         const response = await fetch(optimizeButton.dataset.optimizeUrl, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCsrfToken(),
+            },
             body: JSON.stringify({
                 foodInformation: getFoodInformation(),
                 objective: getObjective(),
