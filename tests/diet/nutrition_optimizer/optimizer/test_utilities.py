@@ -8,7 +8,7 @@ from diet.nutrition_optimizer.optimizer.objective import Objective
 from diet.nutrition_optimizer.optimizer.utilities import (
     _camel_to_snake,
     _snake_to_camel,
-    convert_keys_to_camel_case,
+    convert_top_level_keys_to_camel_case,
     parse_request_data,
 )
 
@@ -85,7 +85,7 @@ def test_parse_invalid_request_data(mocker: MockerFixture) -> None:
 
 def test_convert_keys_to_camel_case() -> None:
     response = {"status": "Optimal", "food_intake": {"boiled_egg": 3}}
-    result = convert_keys_to_camel_case(response)
+    result = convert_top_level_keys_to_camel_case(response)
 
     assert "status" in result
     assert "foodIntake" in result
