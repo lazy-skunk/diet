@@ -1,0 +1,81 @@
+<h2>Food Information</h2>
+<table class="table table-bordered table-striped" id="food-table">
+    <thead class="table-dark">
+        <tr>
+            <th scope="col">Food Name</th>
+            <th scope="col">Energy (kcal/100g)</th>
+            <th scope="col">Protein (g/100g)</th>
+            <th scope="col">Fat (g/100g)</th>
+            <th scope="col">Carbohydrates (g/100g)</th>
+            <th scope="col">Grams Per Unit (g)</th>
+            <th scope="col">Minimum Intake (units)</th>
+            <th scope="col">Maximum Intake (units)</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody id="food-inputs">
+        <tr>
+            <td>
+                <input type="text" class="form-control" name="food-name" />
+            </td>
+            <td>
+                <input type="number" class="form-control" name="food-energy" />
+            </td>
+            <td>
+                <input type="number" class="form-control" name="food-protein" />
+            </td>
+            <td>
+                <input type="number" class="form-control" name="food-fat" />
+            </td>
+            <td>
+                <input type="number" class="form-control" name="food-carbohydrates" />
+            </td>
+            <td>
+                <input type="number" class="form-control" name="food-grams-per-unit" />
+            </td>
+            <td>
+                <input type="number" class="form-control" name="food-minimum-intake" />
+            </td>
+            <td>
+                <input type="number" class="form-control" name="food-maximum-intake" />
+            </td>
+            <td class="no-action"></td>
+        </tr>
+    </tbody>
+</table>
+
+<button type="button" id="add-food" class="btn btn-outline-primary">
+    Add Food
+</button>
+
+<template id="food-template">
+    <tr>
+        <td>
+            <input type="text" class="form-control" name="food-name" />
+        </td>
+        <td>
+            <input type="number" class="form-control" name="food-energy" />
+        </td>
+        <td>
+            <input type="number" class="form-control" name="food-protein" />
+        </td>
+        <td>
+            <input type="number" class="form-control" name="food-fat" />
+        </td>
+        <td>
+            <input type="number" class="form-control" name="food-carbohydrates" />
+        </td>
+        <td>
+            <input type="number" class="form-control" name="food-grams-per-unit" />
+        </td>
+        <td>
+            <input type="number" class="form-control" name="food-minimum-intake" />
+        </td>
+        <td>
+            <input type="number" class="form-control" name="food-maximum-intake" />
+        </td>
+        <td>
+            <button type="button" class="btn btn-outline-danger">Remove</button>
+        </td>
+    </tr>
+</template>
