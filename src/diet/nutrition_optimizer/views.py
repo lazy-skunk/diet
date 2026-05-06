@@ -4,7 +4,7 @@ from diet.nutrition_optimizer.optimizer.nutrition_optimizer import (
     NutritionOptimizer,
 )
 from diet.nutrition_optimizer.optimizer.utilities import (
-    convert_keys_to_camel_case,
+    convert_top_level_keys_to_camel_case,
     parse_request_data,
 )
 from diet.utils.custom_logger import CustomLogger
@@ -35,7 +35,7 @@ def optimize() -> Response:
         )
         result = nutrition_optimizer.solve()
 
-        parsed_result = convert_keys_to_camel_case(result)
+        parsed_result = convert_top_level_keys_to_camel_case(result)
         return jsonify(parsed_result)
     except ValueError as e:
         _logger.warning(f"Invalid request data: {e}")

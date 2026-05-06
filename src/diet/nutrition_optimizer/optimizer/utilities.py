@@ -1,4 +1,5 @@
 import re
+from collections.abc import Callable, Mapping, Sequence
 
 from flask import Request
 
@@ -18,19 +19,19 @@ def parse_request_data(
         objective_request = request.json.get("objective")
         constraints_request = request.json.get("constraints")
 
-        food_information = _convert_to_generic(
+        food_information = _convert_to_models(
             food_information_request, FoodInformation
         )
-        objective = _convert_to_objective(objective_request)
-        constraints = _convert_to_generic(constraints_request, Constraint)
+        objective = _convert_to_model(objective_request, Objective)
+        constraints = _convert_to_models(constraints_request, Constraint)
 
         return food_information, objective, constraints
     except Exception as e:
         raise ValueError(f"Error processing request data: {e}") from e
 
 
-def convert_keys_to_camel_case(
-    response: dict[str, object],
+def convert_top_level_keys_to_camel_case(
+    response: Mapping[str, object],
 ) -> dict[str, object]:
     return {_snake_to_camel(key): value for key, value in response.items()}
 
@@ -51,14 +52,13 @@ def _snake_to_camel(snake_case_str: str) -> str:
     )
 
 
-def _convert_to_generic(data: list[dict[str, object]], cls: type) -> list:
-    return [
-        cls(**{_camel_to_snake(key): value for key, value in item.items()})
-        for item in data
-    ]
+def _convert_to_models[T](
+    data: Sequence[Mapping[str, object]], cls: Callable[..., T]
+) -> list[T]:
+    return [_convert_to_model(item, cls) for item in data]
 
 
-def _convert_to_objective(data: dict[str, object]) -> Objective:
-    return Objective(
-        **{_camel_to_snake(key): value for key, value in data.items()}
-    )
+def _convert_to_model[T](
+    data: Mapping[str, object], cls: Callable[..., T]
+) -> T:
+    return cls(**{_camel_to_snake(key): value for key, value in data.items()})

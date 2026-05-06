@@ -1,3 +1,5 @@
+from typing import TypedDict
+
 from pulp import (
     LpInteger,
     LpMaximize,
@@ -11,6 +13,14 @@ from diet.nutrition_optimizer.optimizer.constraint import Constraint
 from diet.nutrition_optimizer.optimizer.food_information import FoodInformation
 from diet.nutrition_optimizer.optimizer.objective import Objective
 from diet.utils.custom_logger import CustomLogger
+
+
+class NutritionOptimizerResult(TypedDict, total=False):
+    status: str
+    food_intakes: dict[str, float | None]
+    total_nutrient_values: dict[str, float]
+    pfc_ratio: dict[str, float]
+    message: str
 
 
 class NutritionOptimizer:
@@ -240,7 +250,7 @@ class NutritionOptimizer:
 
         self._logger.info("Completed preparation for solve.")
 
-    def solve(self) -> dict[str, object]:
+    def solve(self) -> NutritionOptimizerResult:
         self._preparation()
 
         self._logger.info("Starting to solve the optimization problem.")
