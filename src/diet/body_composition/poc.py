@@ -186,7 +186,6 @@ def log_solution() -> None:
 
 
 def main() -> None:
-
     problem = build_problem()
     problem.solve()
 
