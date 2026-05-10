@@ -2,9 +2,9 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from diet.auth.models import User
 from diet.extensions import sql_alchemy
-from diet.utils.custom_logger import CustomLogger
+from diet.utils.custom_logger import get_logger
 
-_logger = CustomLogger.get_logger()
+_logger = get_logger()
 
 
 class UserRepository:

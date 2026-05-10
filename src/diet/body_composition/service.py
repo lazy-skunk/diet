@@ -8,9 +8,9 @@ from pandas import DataFrame
 
 from diet.body_composition.models import BodyComposition
 from diet.body_composition.repository import BodyCompositionRepository
-from diet.utils.custom_logger import CustomLogger
+from diet.utils.custom_logger import get_logger
 
-_logger = CustomLogger.get_logger()
+_logger = get_logger()
 
 
 class BodyCompositionService:

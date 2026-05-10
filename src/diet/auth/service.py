@@ -3,9 +3,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from diet.auth.models import User
 from diet.auth.repository import UserRepository
-from diet.utils.custom_logger import CustomLogger
+from diet.utils.custom_logger import get_logger
 
-_logger = CustomLogger.get_logger()
+_logger = get_logger()
 
 
 class UserService:

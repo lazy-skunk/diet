@@ -12,7 +12,7 @@ from pulp import (
 from diet.nutrition_optimizer.optimizer.constraint import Constraint
 from diet.nutrition_optimizer.optimizer.food_information import FoodInformation
 from diet.nutrition_optimizer.optimizer.objective import Objective
-from diet.utils.custom_logger import CustomLogger
+from diet.utils.custom_logger import get_logger
 
 
 class NutritionOptimizerResult(TypedDict, total=False):
@@ -36,7 +36,7 @@ class NutritionOptimizer:
         self._objective = objective
         self._constraints = constraints
 
-        self._logger = CustomLogger.get_logger()
+        self._logger = get_logger()
 
         self._food_intake_variables: dict[str, LpVariable] = {}
         self._problem: LpProblem
