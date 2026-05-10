@@ -8,9 +8,9 @@ from flask_migrate import Migrate
 
 from diet.config import config
 from diet.extensions import csrf_protect, login_manager, sql_alchemy
-from diet.utils.custom_logger import CustomLogger
+from diet.utils.custom_logger import get_logger
 
-_logger = CustomLogger.get_logger()
+_logger = get_logger()
 
 
 def create_app(config_key: str) -> Flask:

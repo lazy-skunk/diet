@@ -3,10 +3,14 @@ import datetime
 from sqlalchemy.orm import validates
 
 from diet.extensions import sql_alchemy
-from diet.utils.custom_logger import CustomLogger
-from diet.utils.validation_util import ValidationUtil
+from diet.utils.custom_logger import get_logger
+from diet.utils.validation_util import (
+    validate_date,
+    validate_not_none,
+    validate_number_range,
+)
 
-_logger = CustomLogger.get_logger()
+_logger = get_logger()
 
 _MIN_WEIGHT = 0.1
 _MAX_WEIGHT = 300.0
@@ -42,8 +46,8 @@ class BodyComposition(sql_alchemy.Model):  # type: ignore
     ) -> datetime.date:
         _logger.debug(f"Start: {key=}, {input_date=}")
 
-        ValidationUtil.validate_not_none(key, input_date)
-        ValidationUtil.validate_date(key, input_date)
+        validate_not_none(key, input_date)
+        validate_date(key, input_date)
 
         _logger.debug(f"End: {key=}, {input_date=}")
         return input_date
@@ -52,10 +56,8 @@ class BodyComposition(sql_alchemy.Model):  # type: ignore
     def validate_weight(self, key: str, weight: float) -> float:
         _logger.debug(f"Start: {key=}, {weight=}")
 
-        ValidationUtil.validate_not_none(key, weight)
-        ValidationUtil.validate_number_range(
-            key, weight, _MIN_WEIGHT, _MAX_WEIGHT
-        )
+        validate_not_none(key, weight)
+        validate_number_range(key, weight, _MIN_WEIGHT, _MAX_WEIGHT)
 
         _logger.debug(f"End: {key=}, {weight=}")
         return weight
@@ -65,9 +67,7 @@ class BodyComposition(sql_alchemy.Model):  # type: ignore
         _logger.debug(f"Start: {key=}, {body_fat=}")
 
         if body_fat:
-            ValidationUtil.validate_number_range(
-                key, body_fat, _MIN_BODY_FAT, _MAX_BODY_FAT
-            )
+            validate_number_range(key, body_fat, _MIN_BODY_FAT, _MAX_BODY_FAT)
 
         _logger.debug(f"End: {key=}, {body_fat=}")
         return body_fat

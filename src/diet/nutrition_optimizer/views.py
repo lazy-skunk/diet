@@ -7,7 +7,7 @@ from diet.nutrition_optimizer.optimizer.utilities import (
     convert_top_level_keys_to_camel_case,
     parse_request_data,
 )
-from diet.utils.custom_logger import CustomLogger
+from diet.utils.custom_logger import get_logger
 
 blueprint = Blueprint(
     "nutrition_optimizer",
@@ -17,7 +17,7 @@ blueprint = Blueprint(
     url_prefix="/nutrition_optimizer",
 )
 
-_logger = CustomLogger.get_logger()
+_logger = get_logger()
 
 
 @blueprint.route("/")
