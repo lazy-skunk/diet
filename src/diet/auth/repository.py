@@ -7,55 +7,53 @@ from diet.utils.custom_logger import get_logger
 _logger = get_logger()
 
 
-class UserRepository:
-    @staticmethod
-    def create(user: User) -> None:
-        _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
+def create(user: User) -> None:
+    _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
 
-        sql_alchemy.session.add(user)
+    sql_alchemy.session.add(user)
 
-        try:
-            sql_alchemy.session.commit()
-        except SQLAlchemyError as e:
-            sql_alchemy.session.rollback()
-            _logger.error(e, exc_info=True)
-            raise
+    try:
+        sql_alchemy.session.commit()
+    except SQLAlchemyError as e:
+        sql_alchemy.session.rollback()
+        _logger.error(e, exc_info=True)
+        raise
 
-        _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
+    _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
 
-    @staticmethod
-    def update(user: User) -> None:
-        _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
 
-        try:
-            sql_alchemy.session.commit()
-        except SQLAlchemyError as e:
-            sql_alchemy.session.rollback()
-            _logger.error(e, exc_info=True)
-            raise
+def update(user: User) -> None:
+    _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
 
-        _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
+    try:
+        sql_alchemy.session.commit()
+    except SQLAlchemyError as e:
+        sql_alchemy.session.rollback()
+        _logger.error(e, exc_info=True)
+        raise
 
-    @staticmethod
-    def find_by_email(email: str) -> User | None:
-        _logger.info(f"Start: {email=}")
+    _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
 
-        user: User | None = User.query.filter_by(email=email).first()
 
-        if not user:
-            _logger.info(f"End: User not found - {email=}")
-            return None
+def find_by_email(email: str) -> User | None:
+    _logger.info(f"Start: {email=}")
 
-        _logger.info(
-            f"End: User found - {user.id=}, {user.username=}, {user.email=}"
-        )
-        return user
+    user: User | None = User.query.filter_by(email=email).first()
 
-    @staticmethod
-    def find_by_id(id: str) -> User:
-        _logger.info(f"Start: {id=}")
+    if not user:
+        _logger.info(f"End: User not found - {email=}")
+        return None
 
-        user: User = User.query.filter_by(id=id).first()
+    _logger.info(
+        f"End: User found - {user.id=}, {user.username=}, {user.email=}"
+    )
+    return user
 
-        _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
-        return user
+
+def find_by_id(id: str) -> User:
+    _logger.info(f"Start: {id=}")
+
+    user: User = User.query.filter_by(id=id).first()
+
+    _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
+    return user

@@ -9,7 +9,14 @@ from diet.auth.forms import (
     SigninForm,
     SignupForm,
 )
-from diet.auth.service import UserService
+from diet.auth.service import (
+    authenticate_user,
+    change_username,
+    create_user,
+)
+from diet.auth.service import (
+    change_password as change_user_password,
+)
 
 blueprint = Blueprint(
     "auth",
@@ -30,7 +37,7 @@ def signup() -> str | Response:
         password = form.password.data
 
         try:
-            new_user = UserService.create(username, email, password)
+            new_user = create_user(username, email, password)
         except (ValueError, TypeError) as e:
             flash(str(e), "danger")
             return render_template("auth/signup.html", form=form)
@@ -53,7 +60,7 @@ def signin() -> str | Response:
         email = form.email.data
         password = form.password.data
 
-        user = UserService.authenticate(email, password)
+        user = authenticate_user(email, password)
 
         if user:
             login_user(user)
@@ -85,7 +92,7 @@ def account_information() -> str:
     form = AccountInformationForm()
     if form.validate_on_submit():
         new_username = form.username.data
-        is_succeeded = UserService.change_username(current_user, new_username)
+        is_succeeded = change_username(current_user, new_username)
 
         if is_succeeded:
             flash("Usename changed successfully.", "success")
@@ -110,7 +117,7 @@ def change_password() -> str | Response:
     if form.validate_on_submit():
         current_password = form.current_password.data
         new_password = form.new_password.data
-        is_succeeded = UserService.change_password(
+        is_succeeded = change_user_password(
             current_user, current_password, new_password
         )
 
