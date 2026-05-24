@@ -1,9 +1,13 @@
+from typing import cast
+
 import pytest
 
 from diet.nutrition_optimizer.models import (
     Constraint,
+    FailedNutritionOptimizerResult,
     FoodInformation,
     Objective,
+    OptimalNutritionOptimizerResult,
 )
 from diet.nutrition_optimizer.service import NutritionOptimizer
 
@@ -52,13 +56,11 @@ def test_solve() -> None:
     result = optimizer.solve()
 
     assert result["status"] == "Optimal"
-    assert "food_intakes" in result
-    assert "total_nutrient_values" in result
-    assert "pfc_ratio" in result
+    optimal_result = cast(OptimalNutritionOptimizerResult, result)
 
-    assert result["food_intakes"]["boiled_egg"] == 2
-    assert result["total_nutrient_values"]["energy"] == 134
-    assert "fat" in result["pfc_ratio"]
+    assert optimal_result["food_intakes"]["boiled_egg"] == 2
+    assert optimal_result["total_nutrient_values"]["energy"] == 134
+    assert "fat" in optimal_result["pfc_ratio"]
 
 
 def test_infeasible() -> None:
@@ -68,9 +70,10 @@ def test_infeasible() -> None:
     result = optimizer.solve()
 
     assert result["status"] == "Infeasible"
-    assert "message" in result
+    failed_result = cast(FailedNutritionOptimizerResult, result)
+
     assert (
-        result["message"] == "Please review the constraints,"
+        failed_result["message"] == "Please review the constraints,"
         " the grams per unit, or the intake values."
     )
 
@@ -148,8 +151,10 @@ def test_solve_with_multiple_foods_calculates_totals_by_food_name() -> None:
     result = optimizer.solve()
 
     assert result["status"] == "Optimal"
-    assert result["food_intakes"] == {"boiled_egg": 2, "rice": 1}
-    assert result["total_nutrient_values"] == {
+    optimal_result = cast(OptimalNutritionOptimizerResult, result)
+
+    assert optimal_result["food_intakes"] == {"boiled_egg": 2, "rice": 1}
+    assert optimal_result["total_nutrient_values"] == {
         "energy": 368.0,
         "protein": 16.4,
         "fat": 11.0,
@@ -175,7 +180,9 @@ def test_solve_returns_zero_pfc_ratio_when_macro_energy_is_zero() -> None:
     result = optimizer.solve()
 
     assert result["status"] == "Optimal"
-    assert result["pfc_ratio"] == {
+    optimal_result = cast(OptimalNutritionOptimizerResult, result)
+
+    assert optimal_result["pfc_ratio"] == {
         "protein": 0.0,
         "fat": 0.0,
         "carbohydrates": 0.0,
