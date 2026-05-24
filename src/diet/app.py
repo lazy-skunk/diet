@@ -1,4 +1,3 @@
-import sys
 from typing import Any
 
 from flask import Flask, g, render_template, request
@@ -31,7 +30,7 @@ def create_app(config_key: str) -> Flask:
         _register_request_hooks(app)
     except Exception as e:
         _logger.error(e, exc_info=True)
-        sys.exit(1)
+        raise
 
     _logger.info("End")
     return app
