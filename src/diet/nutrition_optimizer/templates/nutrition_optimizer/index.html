@@ -6,13 +6,13 @@
 
 {% block extra_css %}
     <link rel="stylesheet"
-          href="{{ url_for('nutrition_optimizer.static', filename='nutrition_optimizer.css') }}" />
+          href="{{ url_for('nutrition_optimizer.static', filename='style.css') }}" />
 {% endblock extra_css %}
 
 {% block extra_js %}
     <script src="https://code.highcharts.com/highcharts.js" defer></script>
     <script type="module"
-            src="{{ url_for('nutrition_optimizer.static', filename='nutritionOptimizerMain.js') }}"></script>
+            src="{{ url_for('nutrition_optimizer.static', filename='script.js') }}"></script>
 {% endblock extra_js %}
 
 {% block content %}

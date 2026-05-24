@@ -1,17 +1,16 @@
-import { addEventListenerToActionButton } from "./nutritionOptimizerDomUtilities.js";
 import {
     appendTemplateToTable,
     initializeNutrientSelectOnChange,
-    optimize,
-} from "./nutritionOptimizer.js";
+} from "./form.js";
+import { optimize } from "./nutritionOptimizer.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    addEventListenerToActionButton("add-food", () =>
+    document.getElementById("add-food").addEventListener("click", () =>
         appendTemplateToTable("food-template", "food-inputs"),
     );
     initializeNutrientSelectOnChange();
-    addEventListenerToActionButton("add-constraint", () =>
+    document.getElementById("add-constraint").addEventListener("click", () =>
         appendTemplateToTable("constraint-template", "constraint-inputs"),
     );
-    addEventListenerToActionButton("optimize", () => optimize());
+    document.getElementById("optimize").addEventListener("click", () => optimize());
 });
