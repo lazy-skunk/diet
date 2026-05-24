@@ -1,4 +1,3 @@
-from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from diet.auth.models import User
@@ -8,7 +7,7 @@ from diet.utils.custom_logger import get_logger
 _logger = get_logger()
 
 
-def create_user(username: str, email: str, password: str) -> User:
+def register_user(username: str, email: str, password: str) -> User:
     _logger.info(f"Start: {username=}, {email=}")
 
     new_user = User(username=username, email=email)
@@ -44,9 +43,9 @@ def authenticate_user(email: str, password: str) -> User | None:
     return None
 
 
-def change_password(
+def update_password(
     user: User, current_password: str, new_password: str
-) -> bool:
+) -> None:
     _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
 
     if not check_password_hash(user.password_hash, current_password):
@@ -54,35 +53,21 @@ def change_password(
             f"End: failed (Invalid credentials) - {user.id=}"
             f", {user.username=}, {user.email=}"
         )
-        return False
+        raise ValueError("Invalid current password.")
 
-    try:
-        user.password_hash = generate_password_hash(new_password)
-        update(user)
-        _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")
-        return True
-    except SQLAlchemyError as e:
-        _logger.error(e, exc_info=True)
-        return False
+    user.password_hash = generate_password_hash(new_password)
+    update(user)
+    _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")
 
 
-def change_username(user: User, new_username: str) -> bool:
+def update_username(user: User, new_username: str) -> None:
     _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
 
-    try:
-        user.username = new_username
-        update(user)
-        _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")
-        return True
-    except SQLAlchemyError as e:
-        _logger.error(e, exc_info=True)
-        return False
+    normalized_username = new_username.strip()
+    if user.username == normalized_username:
+        _logger.info(f"End: unchanged - {user.id=}, {user.username=}")
+        return
 
-    # @staticmethod
-    # def validate_unique(model: Any, key: str, value: str) -> None:
-    #     exists = model.query.filter(getattr(model, key) == value).first()
-    #     if exists:
-    #         reason = f"{value} cannot be used"
-    #         message = _VALIDATION_FAILED_MSG.format(key=key, reason=reason)
-    #         _logger.warning(message)
-    #         raise ValueError(message)
+    user.username = normalized_username
+    update(user)
+    _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")

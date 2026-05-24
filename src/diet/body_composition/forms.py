@@ -3,7 +3,12 @@ from datetime import date
 from flask_wtf import FlaskForm
 from wtforms import DateField, SubmitField
 from wtforms.fields import FloatField
-from wtforms.validators import DataRequired, NumberRange, Optional
+from wtforms.validators import (
+    DataRequired,
+    InputRequired,
+    NumberRange,
+    Optional,
+)
 
 today = date.today()
 
@@ -16,7 +21,7 @@ class RecordBodyCompositionForm(FlaskForm):
     )
     weight = FloatField(
         validators=[
-            DataRequired(),
+            InputRequired(),
             NumberRange(min=0.1, max=300.0),
         ],
         render_kw={

@@ -11,11 +11,9 @@ from diet.auth.forms import (
 )
 from diet.auth.service import (
     authenticate_user,
-    change_username,
-    create_user,
-)
-from diet.auth.service import (
-    change_password as change_user_password,
+    register_user,
+    update_password,
+    update_username,
 )
 
 blueprint = Blueprint(
@@ -37,7 +35,7 @@ def signup() -> str | Response:
         password = form.password.data
 
         try:
-            new_user = create_user(username, email, password)
+            new_user = register_user(username, email, password)
         except (ValueError, TypeError) as e:
             flash(str(e), "danger")
             return render_template("auth/signup.html", form=form)
@@ -92,12 +90,12 @@ def account_information() -> str:
     form = AccountInformationForm()
     if form.validate_on_submit():
         new_username = form.username.data
-        is_succeeded = change_username(current_user, new_username)
-
-        if is_succeeded:
-            flash("Usename changed successfully.", "success")
+        try:
+            update_username(current_user, new_username)
+        except SQLAlchemyError:
+            flash("Username change failed. Please try again later.", "danger")
         else:
-            flash("Usename change failed.", "danger")
+            flash("Username changed successfully.", "success")
 
     form.username.data = current_user.username
     return render_template("auth/account_information.html", form=form)
@@ -117,15 +115,15 @@ def change_password() -> str | Response:
     if form.validate_on_submit():
         current_password = form.current_password.data
         new_password = form.new_password.data
-        is_succeeded = change_user_password(
-            current_user, current_password, new_password
-        )
-
-        if is_succeeded:
+        try:
+            update_password(current_user, current_password, new_password)
+        except ValueError as e:
+            flash(str(e), "danger")
+        except SQLAlchemyError:
+            flash("Password change failed. Please try again later.", "danger")
+        else:
             flash("Password changed successfully.", "success")
             return render_template("auth/account_menu.html")
-        else:
-            flash("Invalid current password.", "danger")
 
     return render_template("auth/change_password.html", form=form)
 
