@@ -1,12 +1,6 @@
 from flask import Blueprint, Response, jsonify, render_template, request
 
-from diet.nutrition_optimizer.optimizer.nutrition_optimizer import (
-    NutritionOptimizer,
-)
-from diet.nutrition_optimizer.optimizer.utilities import (
-    convert_top_level_keys_to_camel_case,
-    parse_request_data,
-)
+from diet.nutrition_optimizer.service import optimize as optimize_nutrition
 from diet.utils.custom_logger import get_logger
 
 blueprint = Blueprint(
@@ -26,20 +20,15 @@ def index() -> str:
 
 
 @blueprint.route("/optimize", methods=["POST"])
-def optimize() -> Response:
+def optimize() -> Response | tuple[Response, int]:
     try:
-        food_information, objective, constraints = parse_request_data(request)
-
-        nutrition_optimizer = NutritionOptimizer(
-            food_information, objective, constraints
-        )
-        result = nutrition_optimizer.solve()
-
-        parsed_result = convert_top_level_keys_to_camel_case(result)
-        return jsonify(parsed_result)
+        return jsonify(optimize_nutrition(request))
     except ValueError as e:
         _logger.warning(f"Invalid request data: {e}")
-        return jsonify({"status": "Error", "message": "Invalid request data"})
-    except Exception as e:  # pragma: no cover
+        return (
+            jsonify({"status": "Error", "message": "Invalid request data"}),
+            400,
+        )
+    except Exception as e:
         _logger.warning(f"Error during optimization: {e}")
-        return jsonify({"status": "Error", "message": str(e)})
+        return jsonify({"status": "Error", "message": str(e)}), 500
