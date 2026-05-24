@@ -1,6 +1,8 @@
 from collections.abc import Callable
 
 from flask.testing import FlaskClient
+from pytest_mock import MockerFixture
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from diet.auth.models import User
 
@@ -19,6 +21,25 @@ def test_signin_with_valid_credentials_redirects_home(
         "/auth/signin",
         data={
             "email": "signin@example.com",
+            "password": "Password123!",
+            "sign_in": "1",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/")
+
+
+def test_signin_normalizes_email_before_authentication(
+    client: FlaskClient, create_user: Callable[..., User]
+) -> None:
+    create_user(email="signin@example.com", password="Password123!")
+
+    response = client.post(
+        "/auth/signin",
+        data={
+            "email": "  SIGNIN@example.com  ",
             "password": "Password123!",
             "sign_in": "1",
         },
@@ -71,7 +92,31 @@ def test_signup_with_existing_email_shows_error(
     )
 
     assert response.status_code == 200
-    assert b"Sign-up failed. Please try again later." in response.data
+    assert b"Email is already registered." in response.data
+
+
+def test_signup_with_integrity_error_shows_existing_email_error(
+    client: FlaskClient, mocker: MockerFixture
+) -> None:
+    mocker.patch(
+        "diet.auth.service.create",
+        side_effect=IntegrityError(None, None, Exception("unique constraint")),
+    )
+
+    response = client.post(
+        "/auth/signup",
+        data={
+            "username": "new-user",
+            "email": "race@example.com",
+            "password": "Password123!",
+            "confirm_password": "Password123!",
+            "sign_up": "1",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Email is already registered." in response.data
 
 
 def test_signup_with_password_mismatch_shows_validation_error(
@@ -119,3 +164,135 @@ def test_signout_redirects_home_when_authenticated(
 
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/")
+
+
+def test_change_password_with_valid_credentials_redirects_account_menu(
+    client: FlaskClient, create_user: Callable[..., User]
+) -> None:
+    create_user(email="change-password@example.com", password="Password123!")
+    client.post(
+        "/auth/signin",
+        data={
+            "email": "change-password@example.com",
+            "password": "Password123!",
+            "sign_in": "1",
+        },
+    )
+
+    response = client.post(
+        "/auth/change_password",
+        data={
+            "current_password": "Password123!",
+            "new_password": "NewPassword123!",
+            "confirm_new_password": "NewPassword123!",
+            "change_password": "1",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/auth/account_menu")
+
+
+def test_account_information_with_valid_username_redirects_self(
+    client: FlaskClient, create_user: Callable[..., User]
+) -> None:
+    create_user(email="account-info@example.com", password="Password123!")
+    client.post(
+        "/auth/signin",
+        data={
+            "email": "account-info@example.com",
+            "password": "Password123!",
+            "sign_in": "1",
+        },
+    )
+
+    response = client.post(
+        "/auth/account_information",
+        data={"username": "updated-user", "update": "1"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/auth/account_information")
+
+
+def test_change_password_with_invalid_current_password_shows_error(
+    client: FlaskClient, create_user: Callable[..., User]
+) -> None:
+    create_user(email="wrong-current@example.com", password="Password123!")
+    client.post(
+        "/auth/signin",
+        data={
+            "email": "wrong-current@example.com",
+            "password": "Password123!",
+            "sign_in": "1",
+        },
+    )
+
+    response = client.post(
+        "/auth/change_password",
+        data={
+            "current_password": "wrong-password",
+            "new_password": "NewPassword123!",
+            "confirm_new_password": "NewPassword123!",
+            "change_password": "1",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Invalid current password." in response.data
+
+
+def test_account_information_with_empty_username_shows_validation_error(
+    client: FlaskClient, create_user: Callable[..., User]
+) -> None:
+    create_user(email="empty-username@example.com", password="Password123!")
+    client.post(
+        "/auth/signin",
+        data={
+            "email": "empty-username@example.com",
+            "password": "Password123!",
+            "sign_in": "1",
+        },
+    )
+
+    response = client.post(
+        "/auth/account_information",
+        data={"username": "", "update": "1"},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"This field is required." in response.data
+
+
+def test_account_information_with_database_error_shows_error(
+    client: FlaskClient,
+    create_user: Callable[..., User],
+    mocker: MockerFixture,
+) -> None:
+    create_user(email="username-db-error@example.com", password="Password123!")
+    client.post(
+        "/auth/signin",
+        data={
+            "email": "username-db-error@example.com",
+            "password": "Password123!",
+            "sign_in": "1",
+        },
+    )
+
+    mocker.patch(
+        "diet.auth.views.update_username",
+        side_effect=SQLAlchemyError("db error"),
+    )
+
+    response = client.post(
+        "/auth/account_information",
+        data={"username": "updated-user", "update": "1"},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Username change failed. Please try again later." in response.data

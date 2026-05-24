@@ -3,8 +3,15 @@ from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 
+def normalize_email(email: str | None) -> str | None:
+    if email is None:
+        return None
+    return email.strip().lower()
+
+
 class BaseAuthForm(FlaskForm):
     email = StringField(
+        filters=[normalize_email],
         validators=[DataRequired(), Email()],
         render_kw={"class": "form-control", "autocomplete": "username"},
     )

@@ -86,7 +86,7 @@ def account_menu() -> str:
 
 @blueprint.route("/account_information", methods=["GET", "POST"])
 @login_required
-def account_information() -> str:
+def account_information() -> str | Response:
     form = AccountInformationForm()
     if form.validate_on_submit():
         new_username = form.username.data
@@ -96,6 +96,7 @@ def account_information() -> str:
             flash("Username change failed. Please try again later.", "danger")
         else:
             flash("Username changed successfully.", "success")
+            return redirect(url_for("auth.account_information"))
 
     form.username.data = current_user.username
     return render_template("auth/account_information.html", form=form)
@@ -123,7 +124,7 @@ def change_password() -> str | Response:
             flash("Password change failed. Please try again later.", "danger")
         else:
             flash("Password changed successfully.", "success")
-            return render_template("auth/account_menu.html")
+            return redirect(url_for("auth.account_menu"))
 
     return render_template("auth/change_password.html", form=form)
 
