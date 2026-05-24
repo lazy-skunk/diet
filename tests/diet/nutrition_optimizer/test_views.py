@@ -74,3 +74,16 @@ def test_optimize_with_csrf_enabled(app: Flask, client: FlaskClient) -> None:
     assert response.status_code == 200
     assert response.json is not None
     assert response.json["status"] == "Optimal"
+
+
+def test_optimize_with_invalid_request_returns_bad_request(
+    client: FlaskClient,
+) -> None:
+    response = client.post(
+        "/nutrition_optimizer/optimize",
+        json={"objective": {"sense": "maximize"}},
+    )
+
+    assert response.status_code == 400
+    assert response.json is not None
+    assert response.json["status"] == "Error"

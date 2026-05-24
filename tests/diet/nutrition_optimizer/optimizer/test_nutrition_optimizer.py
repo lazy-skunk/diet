@@ -1,9 +1,11 @@
-from diet.nutrition_optimizer.optimizer.constraint import Constraint
-from diet.nutrition_optimizer.optimizer.food_information import FoodInformation
-from diet.nutrition_optimizer.optimizer.nutrition_optimizer import (
-    NutritionOptimizer,
+import pytest
+
+from diet.nutrition_optimizer.models import (
+    Constraint,
+    FoodInformation,
+    Objective,
 )
-from diet.nutrition_optimizer.optimizer.objective import Objective
+from diet.nutrition_optimizer.service import NutritionOptimizer
 
 _FOOD_INFORMATION = [
     FoodInformation(
@@ -56,6 +58,7 @@ def test_solve() -> None:
 
     assert result["food_intakes"]["boiled_egg"] == 2
     assert result["total_nutrient_values"]["energy"] == 134
+    assert "fat" in result["pfc_ratio"]
 
 
 def test_infeasible() -> None:
@@ -70,3 +73,110 @@ def test_infeasible() -> None:
         result["message"] == "Please review the constraints,"
         " the grams per unit, or the intake values."
     )
+
+
+def test_duplicate_food_names_are_rejected() -> None:
+    duplicate_food_information = [
+        _FOOD_INFORMATION[0],
+        FoodInformation(
+            name="boiled_egg",
+            energy=120,
+            protein=10,
+            fat=8,
+            carbohydrates=1,
+            grams_per_unit=50,
+            minimum_intake=0,
+            maximum_intake=3,
+        ),
+    ]
+
+    with pytest.raises(
+        ValueError, match="Food names must be unique: boiled_egg."
+    ):
+        NutritionOptimizer(
+            duplicate_food_information, _OBJECTIVE, _CONSTRAINTS
+        )
+
+
+def test_same_kind_constraints_do_not_conflict() -> None:
+    constraints = [
+        Constraint(
+            min_max="max",
+            nutrient="energy",
+            unit="energy",
+            value=200,
+        ),
+        Constraint(
+            min_max="max",
+            nutrient="energy",
+            unit="energy",
+            value=180,
+        ),
+    ]
+
+    optimizer = NutritionOptimizer(_FOOD_INFORMATION, _OBJECTIVE, constraints)
+    result = optimizer.solve()
+
+    assert result["status"] == "Optimal"
+
+
+def test_solve_with_multiple_foods_calculates_totals_by_food_name() -> None:
+    food_information = [
+        FoodInformation(
+            name="boiled_egg",
+            energy=134,
+            protein=12.5,
+            fat=10.4,
+            carbohydrates=0.3,
+            grams_per_unit=50,
+            minimum_intake=2,
+            maximum_intake=2,
+        ),
+        FoodInformation(
+            name="rice",
+            energy=156,
+            protein=2.6,
+            fat=0.4,
+            carbohydrates=37.2,
+            grams_per_unit=150,
+            minimum_intake=1,
+            maximum_intake=1,
+        ),
+    ]
+
+    optimizer = NutritionOptimizer(food_information, _OBJECTIVE, [])
+    result = optimizer.solve()
+
+    assert result["status"] == "Optimal"
+    assert result["food_intakes"] == {"boiled_egg": 2, "rice": 1}
+    assert result["total_nutrient_values"] == {
+        "energy": 368.0,
+        "protein": 16.4,
+        "fat": 11.0,
+        "carbohydrates": 56.1,
+    }
+
+
+def test_solve_returns_zero_pfc_ratio_when_macro_energy_is_zero() -> None:
+    food_information = [
+        FoodInformation(
+            name="zero_macro_food",
+            energy=100,
+            protein=0,
+            fat=0,
+            carbohydrates=0,
+            grams_per_unit=100,
+            minimum_intake=1,
+            maximum_intake=1,
+        )
+    ]
+
+    optimizer = NutritionOptimizer(food_information, _OBJECTIVE, [])
+    result = optimizer.solve()
+
+    assert result["status"] == "Optimal"
+    assert result["pfc_ratio"] == {
+        "protein": 0.0,
+        "fat": 0.0,
+        "carbohydrates": 0.0,
+    }
