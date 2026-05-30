@@ -14,6 +14,7 @@ from diet.body_composition.repository import (
     upsert,
 )
 from diet.utils.custom_logger import get_logger
+from diet.utils.transaction import commit
 
 _logger = get_logger()
 
@@ -23,6 +24,7 @@ def upsert_body_composition(
 ) -> None:
     _logger.info(f"Start: {user_id=}, {date=}, {weight=}, {body_fat=}")
     upsert(user_id, date, weight, body_fat)
+    commit()
     _logger.info(f"End: {user_id=}, {date=}, {weight=}, {body_fat=}")
 
 

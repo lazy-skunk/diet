@@ -4,6 +4,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from diet.auth.models import User
 from diet.auth.repository import create, find_by_email, update
 from diet.utils.custom_logger import get_logger
+from diet.utils.transaction import commit
 
 _logger = get_logger()
 
@@ -21,6 +22,7 @@ def register_user(username: str, email: str, password: str) -> User:
 
     try:
         create(new_user)
+        commit()
     except IntegrityError as e:
         raise ValueError("Email is already registered.") from e
 
@@ -67,6 +69,7 @@ def update_password(
 
     user.password_hash = generate_password_hash(new_password)
     update(user)
+    commit()
     _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")
 
 
@@ -80,4 +83,5 @@ def update_username(user: User, new_username: str) -> None:
 
     user.username = normalized_username
     update(user)
+    commit()
     _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")

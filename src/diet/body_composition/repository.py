@@ -1,7 +1,5 @@
 import datetime
 
-from sqlalchemy.exc import SQLAlchemyError
-
 from diet.body_composition.models import BodyComposition
 from diet.extensions import sql_alchemy
 from diet.utils.custom_logger import get_logger
@@ -82,13 +80,6 @@ def upsert(
             date=date, weight=weight, body_fat=body_fat, user_id=user_id
         )
         sql_alchemy.session.add(record)
-
-    try:
-        sql_alchemy.session.commit()
-    except SQLAlchemyError as e:
-        sql_alchemy.session.rollback()
-        _logger.error(e, exc_info=True)
-        raise
 
     _logger.info(
         f"End: {record.user_id=}, {record.date=}"
