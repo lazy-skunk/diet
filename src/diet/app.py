@@ -5,7 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from flask_login import current_user
 from flask_migrate import Migrate
 
-from diet.config import config
+from diet.config import get_config
 from diet.extensions import csrf_protect, login_manager, sql_alchemy
 from diet.utils.custom_logger import get_logger
 
@@ -17,7 +17,7 @@ def create_app(config_key: str) -> Flask:
 
     try:
         app = Flask(__name__)
-        app.config.from_object(config[config_key])
+        app.config.from_object(get_config(config_key))
 
         _init_debug_toolbar(app, config_key)
         _init_database(app)

@@ -3,10 +3,10 @@ import os
 from logging import Formatter, Logger, StreamHandler
 from logging.handlers import RotatingFileHandler
 
-_DEFAULT_LOG_LEVEL = logging.DEBUG
-_DEFAULT_LOG_PATH = "log/app.log"
-_DEFAULT_LOG_SIZE = 1024 * 1024 * 10
-_DEFAULT_LOG_BACKUP = 3
+from diet.config import get_log_settings
+
+_log_settings = get_log_settings()
+
 _STREAM_HANDLER_NAME = "diet_stream_handler"
 _FILE_HANDLER_NAME = "diet_file_handler"
 
@@ -17,10 +17,10 @@ def get_logger() -> Logger:
     if _has_configured_handlers(logger):
         return logger
 
-    log_level = os.getenv("LOG_LEVEL", _DEFAULT_LOG_LEVEL)
+    log_level = _log_settings.log_level
     logger.setLevel(log_level)
 
-    log_path = os.getenv("LOG_PATH", _DEFAULT_LOG_PATH)
+    log_path = _log_settings.log_path
     _ensure_log_directory(log_path)
 
     formatter = Formatter(
@@ -58,11 +58,10 @@ def _add_stream_handler(
 def _add_rotating_file_handler(
     logger: Logger, log_level: str | int, log_path: str, formatter: Formatter
 ) -> None:
-    log_size = int(os.getenv("LOG_SIZE", _DEFAULT_LOG_SIZE))
-    log_backup = int(os.getenv("LOG_BACKUP", _DEFAULT_LOG_BACKUP))
-
     rotating_file_handler = RotatingFileHandler(
-        log_path, maxBytes=log_size, backupCount=log_backup
+        log_path,
+        maxBytes=_log_settings.log_size,
+        backupCount=_log_settings.log_backup,
     )
     rotating_file_handler.set_name(_FILE_HANDLER_NAME)
     rotating_file_handler.setLevel(log_level)
