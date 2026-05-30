@@ -42,8 +42,8 @@ CARBOHYDRATE_KCAL_PER_GRAM = 4
 FOODS: dict[str, Food] = {
     "rice": Food(
         name="ご飯",
-        unit_label="g",
-        grams_per_unit=1,
+        unit_label="杯",
+        grams_per_unit=200,
         nutrition_per_100g={
             "protein": 2.8,
             "fat": 1,
@@ -52,8 +52,8 @@ FOODS: dict[str, Food] = {
         },
         variable_options=VariableOptions(
             name="米の量",
-            lowBound=200,
-            upBound=600,
+            lowBound=3,
+            upBound=3,
             cat="Integer",
         ),
     ),
@@ -87,7 +87,7 @@ FOODS: dict[str, Food] = {
         variable_options=VariableOptions(
             name="ゆで卵の数",
             lowBound=3,
-            upBound=4,
+            upBound=3,
             cat="Integer",
         ),
     ),
@@ -120,7 +120,7 @@ FOODS: dict[str, Food] = {
         },
         variable_options=VariableOptions(
             name="納豆の数",
-            lowBound=0,
+            lowBound=1,
             upBound=2,
             cat="Integer",
         ),
@@ -137,7 +137,7 @@ FOODS: dict[str, Food] = {
         },
         variable_options=VariableOptions(
             name="豆腐の数",
-            lowBound=0,
+            lowBound=1,
             upBound=2,
             cat="Integer",
         ),
