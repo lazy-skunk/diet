@@ -17,7 +17,7 @@ def create_app(config_key: str) -> Flask:
 
     try:
         app = Flask(__name__)
-        app.config.from_object(get_config(config_key))
+        app.config.from_mapping(get_config(config_key))
 
         _init_debug_toolbar(app, config_key)
         _init_database(app)

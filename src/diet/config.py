@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _BASE_DIR = Path(__file__).parent.parent
@@ -12,9 +13,43 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    secret_key: str
-    wtf_csrf_secret_key: str
-    database_url: str = f"sqlite:///{_BASE_DIR / 'local.sqlite'}"
+    secret_key: str = Field(serialization_alias="SECRET_KEY")
+    wtf_csrf_secret_key: str = Field(serialization_alias="WTF_CSRF_SECRET_KEY")
+    database_url: str = Field(
+        default=f"sqlite:///{_BASE_DIR / 'local.sqlite'}",
+        serialization_alias="SQLALCHEMY_DATABASE_URI",
+    )
+    sqlalchemy_track_modifications: bool = Field(
+        default=False,
+        serialization_alias="SQLALCHEMY_TRACK_MODIFICATIONS",
+    )
+    sqlalchemy_echo: bool = Field(
+        default=True,
+        serialization_alias="SQLALCHEMY_ECHO",
+    )
+
+
+class TestingSettings(BaseModel):
+    secret_key: str = Field(
+        default="testing-secret-key",
+        serialization_alias="SECRET_KEY",
+    )
+    wtf_csrf_secret_key: str = Field(
+        default="testing-csrf-secret-key",
+        serialization_alias="WTF_CSRF_SECRET_KEY",
+    )
+    database_url: str = Field(
+        default=f"sqlite:///{_BASE_DIR / 'testing.sqlite'}",
+        serialization_alias="SQLALCHEMY_DATABASE_URI",
+    )
+    sqlalchemy_track_modifications: bool = Field(
+        default=False,
+        serialization_alias="SQLALCHEMY_TRACK_MODIFICATIONS",
+    )
+    wtf_csrf_enabled: bool = Field(
+        default=False,
+        serialization_alias="WTF_CSRF_ENABLED",
+    )
 
 
 class LogSettings(BaseSettings):
@@ -30,36 +65,18 @@ class LogSettings(BaseSettings):
     log_backup: int = 3
 
 
-_settings = Settings()  # type: ignore[call-arg]
 _log_settings = LogSettings()
 
 
-class BaseConfig:
-    SECRET_KEY = _settings.secret_key
-    WTF_CSRF_SECRET_KEY = _settings.wtf_csrf_secret_key
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+def get_config(config_key: str) -> dict[str, object]:
+    if config_key == "testing":
+        testing_settings = TestingSettings()
+        return testing_settings.model_dump(by_alias=True)
+    if config_key == "local":
+        settings = Settings()  # type: ignore[call-arg]
+        return settings.model_dump(by_alias=True)
 
-
-class LocalConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = _settings.database_url
-    SQLALCHEMY_ECHO = True
-
-
-class TestingConfig(BaseConfig):
-    SECRET_KEY = "testing-secret-key"
-    WTF_CSRF_SECRET_KEY = "testing-csrf-secret-key"
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{_BASE_DIR / 'testing.sqlite'}"
-    WTF_CSRF_ENABLED = False
-
-
-_CONFIG = {
-    "testing": TestingConfig,
-    "local": LocalConfig,
-}
-
-
-def get_config(config_key: str) -> type[BaseConfig]:
-    return _CONFIG[config_key]
+    raise KeyError(config_key)
 
 
 def get_log_settings() -> LogSettings:
