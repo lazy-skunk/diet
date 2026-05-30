@@ -33,7 +33,7 @@ def test_record_body_composition_get_sets_latest_values(
             date=datetime.date(2026, 5, 20),
             weight=70.5,
             body_fat=20.1,
-            user_id=str(user.id),
+            user_id=user.id,
         )
     )
     sql_alchemy.session.commit()
@@ -67,7 +67,7 @@ def test_record_body_composition_post_valid_data_saves_and_redirects(
     assert response.headers["Location"].endswith("/")
 
     record = BodyComposition.query.filter_by(
-        user_id=str(user.id), date=datetime.date(2026, 5, 24)
+        user_id=user.id, date=datetime.date(2026, 5, 24)
     ).first()
     assert record is not None
     assert record.weight == 72.3
@@ -105,7 +105,7 @@ def test_record_body_composition_updates_existing_value(
             date=datetime.date(2026, 5, 24),
             weight=70.0,
             body_fat=20.0,
-            user_id=str(user.id),
+            user_id=user.id,
         )
     )
     sql_alchemy.session.commit()
@@ -122,7 +122,7 @@ def test_record_body_composition_updates_existing_value(
     )
 
     record = BodyComposition.query.filter_by(
-        user_id=str(user.id), date=datetime.date(2026, 5, 24)
+        user_id=user.id, date=datetime.date(2026, 5, 24)
     ).first()
     assert record is not None
     assert record.weight == 71.2
@@ -153,7 +153,7 @@ def test_get_body_composition_data_for_authenticated_user_returns_records(
             date=datetime.date(2026, 5, 24),
             weight=66.6,
             body_fat=18.2,
-            user_id=str(user.id),
+            user_id=user.id,
         )
     )
     sql_alchemy.session.commit()

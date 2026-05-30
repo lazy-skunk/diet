@@ -20,7 +20,7 @@ _logger = get_logger()
 
 
 def upsert_body_composition(
-    user_id: str, date: datetime.date, weight: float, body_fat: float
+    user_id: int, date: datetime.date, weight: float, body_fat: float
 ) -> None:
     _logger.info(f"Start: {user_id=}, {date=}, {weight=}, {body_fat=}")
     upsert(user_id, date, weight, body_fat)
@@ -28,7 +28,7 @@ def upsert_body_composition(
     _logger.info(f"End: {user_id=}, {date=}, {weight=}, {body_fat=}")
 
 
-def init_form_data(user_id: str) -> dict[str, float]:
+def init_form_data(user_id: int) -> dict[str, float]:
     _logger.info(f"Start: {user_id=}")
 
     today = datetime.date.today()
@@ -45,16 +45,22 @@ def init_form_data(user_id: str) -> dict[str, float]:
     return form_data
 
 
-def get_body_composition_dicts(user_id: str) -> list[dict[str, str | float]]:
+def get_body_composition_dicts(user_id: int) -> list[dict[str, str | float]]:
     _logger.info(f"Start: {user_id=}")
 
     records = get_body_compositions(user_id)
+    data: list[dict[str, str | float]]
     if not records:
-        _logger.info("Progress: Generate dummy data")
-        dummy_date = datetime.date(1, 1, 1)
-        records = [BodyComposition(dummy_date, 0.1)]
-
-    data = _body_compositions_to_dicts(records)
+        _logger.info("Progress: Generate empty chart data")
+        data = [
+            {
+                "date": datetime.date(1, 1, 1).strftime("%Y-%m-%d"),
+                "weight": 0.1,
+                "body_fat": 0.0,
+            }
+        ]
+    else:
+        data = _body_compositions_to_dicts(records)
 
     _logger.info(f"End: {user_id=}, {len(data)=}")
     return data

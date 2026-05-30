@@ -20,25 +20,24 @@ _MAX_BODY_FAT = 99.9
 
 class BodyComposition(sql_alchemy.Model):  # type: ignore
     id = sql_alchemy.Column(sql_alchemy.Integer, primary_key=True)
+    user_id = sql_alchemy.Column(
+        sql_alchemy.Integer, sql_alchemy.ForeignKey("user.id"), nullable=False
+    )
     date = sql_alchemy.Column(sql_alchemy.Date, nullable=False)
     weight = sql_alchemy.Column(sql_alchemy.Float, nullable=False)
     body_fat = sql_alchemy.Column(sql_alchemy.Float, nullable=True)
 
-    user_id = sql_alchemy.Column(
-        sql_alchemy.Integer, sql_alchemy.ForeignKey("user.id"), nullable=False
-    )
-
     def __init__(
         self,
+        user_id: int,
         date: datetime.date,
         weight: float,
         body_fat: float | None = None,
-        user_id: str | None = None,
     ) -> None:
+        self.user_id = user_id
         self.date = date
         self.weight = weight
         self.body_fat = body_fat
-        self.user_id = user_id
 
     @validates("date")
     def validate_date(

@@ -7,7 +7,7 @@ from diet.utils.custom_logger import get_logger
 _logger = get_logger()
 
 
-def get_body_compositions(user_id: str) -> list[BodyComposition]:
+def get_body_compositions(user_id: int) -> list[BodyComposition]:
     _logger.info(f"Start: {user_id=}")
 
     records = (
@@ -23,7 +23,7 @@ def get_body_compositions(user_id: str) -> list[BodyComposition]:
     return records
 
 
-def get_latest_by_user(user_id: str) -> BodyComposition | None:
+def get_latest_by_user(user_id: int) -> BodyComposition | None:
     _logger.info(f"Start: {user_id=}")
 
     record = (
@@ -40,7 +40,7 @@ def get_latest_by_user(user_id: str) -> BodyComposition | None:
 
 
 def get_by_user_and_date(
-    user_id: str, date: datetime.date
+    user_id: int, date: datetime.date
 ) -> BodyComposition | None:
     _logger.info(f"Start: {user_id=}, {date=}")
 
@@ -56,7 +56,7 @@ def get_by_user_and_date(
 
 
 def upsert(
-    user_id: str, date: datetime.date, weight: float, body_fat: float
+    user_id: int, date: datetime.date, weight: float, body_fat: float
 ) -> None:
     _logger.info(f"Start: {user_id=}, {date=}, {weight=}, {body_fat=}")
 
