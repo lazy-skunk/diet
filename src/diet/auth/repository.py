@@ -31,12 +31,3 @@ def find_by_email(email: str) -> User | None:
         f"End: User found - {user.id=}, {user.username=}, {user.email=}"
     )
     return user
-
-
-def find_by_id(id: str) -> User:
-    _logger.info(f"Start: {id=}")
-
-    user: User = User.query.filter_by(id=id).first()
-
-    _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
-    return user
