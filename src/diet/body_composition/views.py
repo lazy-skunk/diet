@@ -17,9 +17,11 @@ from diet.body_composition.api_models import (
 from diet.body_composition.sample_data import generate_sample_data
 from diet.body_composition.service import (
     compute_monthly_statistics,
-    get_body_composition_dicts,
     init_form_data,
     upsert_body_composition,
+)
+from diet.body_composition.service import (
+    get_body_composition_data as get_user_body_composition_data,
 )
 
 from .forms import RecordBodyCompositionForm
@@ -73,7 +75,7 @@ def record_body_composition() -> str | Response:
 def get_body_composition_data() -> Response:
     if current_user.is_authenticated:
         user_id = current_user.id
-        body_composition_data = get_body_composition_dicts(user_id)
+        body_composition_data = get_user_body_composition_data(user_id)
     else:
         body_composition_data = generate_sample_data()
 

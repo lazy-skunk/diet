@@ -37,12 +37,10 @@ class BodyCompositionDataResponse(BodyCompositionApiModel):
 
 
 def create_body_composition_data_response(
-    body_compositions: list[dict[str, str | float | None]],
-    monthly_statistics: list[dict[str, str | float | None]],
+    body_compositions: list[BodyCompositionData],
+    monthly_statistics: list[MonthlyStatistics],
 ) -> BodyCompositionDataResponse:
-    return BodyCompositionDataResponse.model_validate(
-        {
-            "body_compositions": body_compositions,
-            "monthly_statistics": monthly_statistics,
-        }
+    return BodyCompositionDataResponse(
+        body_compositions=body_compositions,
+        monthly_statistics=monthly_statistics,
     )

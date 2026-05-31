@@ -4,6 +4,10 @@ import json
 import pandas as pd
 from pandas import DataFrame
 
+from diet.body_composition.api_models import (
+    BodyCompositionData,
+    MonthlyStatistics,
+)
 from diet.body_composition.models import BodyComposition
 from diet.body_composition.repository import (
     get_body_compositions,
@@ -43,41 +47,44 @@ def init_form_data(user_id: int) -> dict[str, float | None]:
     return form_data
 
 
-def get_body_composition_dicts(
-    user_id: int,
-) -> list[dict[str, str | float | None]]:
+def get_body_composition_data(user_id: int) -> list[BodyCompositionData]:
     _logger.info(f"Start: {user_id=}")
 
     records = get_body_compositions(user_id)
-    data = _body_compositions_to_dicts(records)
+    data = _body_compositions_to_data(records)
 
     _logger.info(f"End: {user_id=}, {len(data)=}")
     return data
 
 
 def compute_monthly_statistics(
-    body_composition_dicts: list[dict[str, str | float | None]],
-) -> list[dict[str, str | float | None]]:
-    _logger.info(f"Start: {len(body_composition_dicts)=}")
+    body_compositions: list[BodyCompositionData],
+) -> list[MonthlyStatistics]:
+    _logger.info(f"Start: {len(body_compositions)=}")
 
-    if not body_composition_dicts:
+    if not body_compositions:
         _logger.info("End: no data")
         return []
 
     body_composition_df = _prepare_body_composition_dataframe(
-        body_composition_dicts
+        body_compositions
     )
     monthly_statistics_df = _compute_df(body_composition_df)
-    monthly_statistics_json = _df_to_json(monthly_statistics_df)
+    monthly_statistics = _df_to_monthly_statistics(monthly_statistics_df)
 
-    _logger.info(f"End: {len(monthly_statistics_json)=}")
-    return monthly_statistics_json
+    _logger.info(f"End: {len(monthly_statistics)=}")
+    return monthly_statistics
 
 
 def _prepare_body_composition_dataframe(
-    body_composition_dicts: list[dict[str, str | float | None]],
+    body_compositions: list[BodyCompositionData],
 ) -> DataFrame:
-    body_composition_df = pd.DataFrame(body_composition_dicts)
+    body_composition_df = pd.DataFrame(
+        [
+            body_composition.model_dump()
+            for body_composition in body_compositions
+        ]
+    )
     body_composition_df["date"] = pd.to_datetime(body_composition_df["date"])
     body_composition_df.set_index("date", inplace=True)
     return body_composition_df
@@ -98,20 +105,20 @@ def _compute_df(body_composition_df: DataFrame) -> DataFrame:
     return monthly_stats_df
 
 
-def _df_to_json(df: DataFrame) -> list[dict[str, str | float | None]]:
+def _df_to_monthly_statistics(df: DataFrame) -> list[MonthlyStatistics]:
     str_json = df.to_json(orient="records")
     json_data = json.loads(str_json)
-    return json_data
+    return [MonthlyStatistics.model_validate(item) for item in json_data]
 
 
-def _body_compositions_to_dicts(
+def _body_compositions_to_data(
     body_compositions: list[BodyComposition],
-) -> list[dict[str, str | float | None]]:
+) -> list[BodyCompositionData]:
     return [
-        {
-            "date": body_composition.date.strftime("%Y-%m-%d"),
-            "weight": body_composition.weight,
-            "body_fat": body_composition.body_fat,
-        }
+        BodyCompositionData(
+            date=body_composition.date.strftime("%Y-%m-%d"),
+            weight=body_composition.weight,
+            body_fat=body_composition.body_fat,
+        )
         for body_composition in body_compositions
     ]

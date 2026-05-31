@@ -2,6 +2,7 @@ import datetime
 import random
 from datetime import timedelta
 
+from diet.body_composition.api_models import BodyCompositionData
 from diet.utils.custom_logger import get_logger
 
 _logger = get_logger()
@@ -9,7 +10,7 @@ _logger = get_logger()
 
 def generate_sample_data(
     duration_days: int = 365 * 3,
-) -> list[dict[str, str | float | None]]:
+) -> list[BodyCompositionData]:
     _logger.info(f"Start: {duration_days=}")
 
     today = datetime.datetime.today()
@@ -19,7 +20,7 @@ def generate_sample_data(
     weight = round(random.uniform(90, 100), 2)
     body_fat = round(random.uniform(25, 30), 2)
 
-    sample_data: list[dict[str, str | float | None]] = []
+    sample_data: list[BodyCompositionData] = []
     while date_pointer <= today:
         weight_variation = round(random.uniform(-0.4, 0.36), 2)
         weight = round(max(weight + weight_variation, 50), 2)
@@ -28,11 +29,11 @@ def generate_sample_data(
         body_fat = round(max(body_fat + body_fat_variation, 5), 2)
 
         sample_data.append(
-            {
-                "date": date_pointer.strftime("%Y-%m-%d"),
-                "weight": weight,
-                "body_fat": body_fat,
-            }
+            BodyCompositionData(
+                date=date_pointer.strftime("%Y-%m-%d"),
+                weight=weight,
+                body_fat=body_fat,
+            )
         )
 
         date_pointer += timedelta(days=1)
