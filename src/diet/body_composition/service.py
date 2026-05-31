@@ -20,7 +20,7 @@ _logger = get_logger()
 
 
 def upsert_body_composition(
-    user_id: int, date: datetime.date, weight: float, body_fat: float
+    user_id: int, date: datetime.date, weight: float, body_fat: float | None
 ) -> None:
     _logger.info(f"Start: {user_id=}, {date=}, {weight=}, {body_fat=}")
     upsert(user_id, date, weight, body_fat)
@@ -28,7 +28,7 @@ def upsert_body_composition(
     _logger.info(f"End: {user_id=}, {date=}, {weight=}, {body_fat=}")
 
 
-def init_form_data(user_id: int) -> dict[str, float]:
+def init_form_data(user_id: int) -> dict[str, float | None]:
     _logger.info(f"Start: {user_id=}")
 
     today = datetime.date.today()
@@ -45,18 +45,20 @@ def init_form_data(user_id: int) -> dict[str, float]:
     return form_data
 
 
-def get_body_composition_dicts(user_id: int) -> list[dict[str, str | float]]:
+def get_body_composition_dicts(
+    user_id: int,
+) -> list[dict[str, str | float | None]]:
     _logger.info(f"Start: {user_id=}")
 
     records = get_body_compositions(user_id)
-    data: list[dict[str, str | float]]
+    data: list[dict[str, str | float | None]]
     if not records:
         _logger.info("Progress: Generate empty chart data")
         data = [
             {
                 "date": datetime.date(1, 1, 1).strftime("%Y-%m-%d"),
                 "weight": 0.1,
-                "body_fat": 0.0,
+                "body_fat": 0.1,
             }
         ]
     else:
@@ -67,8 +69,8 @@ def get_body_composition_dicts(user_id: int) -> list[dict[str, str | float]]:
 
 
 def compute_monthly_statistics(
-    body_composition_dicts: list[dict[str, str | float]],
-) -> list[dict[str, float]]:
+    body_composition_dicts: list[dict[str, str | float | None]],
+) -> list[dict[str, float | None]]:
     _logger.info(f"Start: {len(body_composition_dicts)=}")
 
     body_composition_df = _prepare_body_composition_dataframe(
@@ -83,7 +85,7 @@ def compute_monthly_statistics(
 
 def generate_sample_data(
     duration_days: int = 365 * 3,
-) -> list[dict[str, str | float]]:
+) -> list[dict[str, str | float | None]]:
     _logger.info(f"Start: {duration_days=}")
 
     today = datetime.datetime.today()
@@ -93,7 +95,7 @@ def generate_sample_data(
     weight = round(random.uniform(90, 100), 2)
     body_fat = round(random.uniform(25, 30), 2)
 
-    sample_data: list[dict[str, str | float]] = []
+    sample_data: list[dict[str, str | float | None]] = []
     while date_pointer <= today:
         weight_variation = round(random.uniform(-0.4, 0.36), 2)
         weight = round(max(weight + weight_variation, 50), 2)
@@ -116,7 +118,7 @@ def generate_sample_data(
 
 
 def _prepare_body_composition_dataframe(
-    body_composition_dicts: list[dict[str, str | float]],
+    body_composition_dicts: list[dict[str, str | float | None]],
 ) -> DataFrame:
     body_composition_df = pd.DataFrame(body_composition_dicts)
     body_composition_df["date"] = pd.to_datetime(body_composition_df["date"])
@@ -139,7 +141,7 @@ def _compute_df(body_composition_df: DataFrame) -> DataFrame:
     return monthly_stats_df
 
 
-def _df_to_json(df: DataFrame) -> list[dict[str, float]]:
+def _df_to_json(df: DataFrame) -> list[dict[str, float | None]]:
     str_json = df.to_json(orient="records")
     json_data = json.loads(str_json)
     return json_data
@@ -147,7 +149,7 @@ def _df_to_json(df: DataFrame) -> list[dict[str, float]]:
 
 def _body_compositions_to_dicts(
     body_compositions: list[BodyComposition],
-) -> list[dict[str, str | float]]:
+) -> list[dict[str, str | float | None]]:
     return [
         {
             "date": body_composition.date.strftime("%Y-%m-%d"),

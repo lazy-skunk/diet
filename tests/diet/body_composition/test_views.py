@@ -93,7 +93,7 @@ def test_record_body_composition_post_invalid_data_shows_error(
 
     assert response.status_code == 200
     assert b"Number must be between 0.1 and 300.0." in response.data
-    assert b"Number must be between 0 and 99.9." in response.data
+    assert b"Number must be between 0.1 and 99.9." in response.data
 
 
 def test_record_body_composition_updates_existing_value(

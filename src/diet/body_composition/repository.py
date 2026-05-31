@@ -56,7 +56,7 @@ def get_by_user_and_date(
 
 
 def upsert(
-    user_id: int, date: datetime.date, weight: float, body_fat: float
+    user_id: int, date: datetime.date, weight: float, body_fat: float | None
 ) -> None:
     _logger.info(f"Start: {user_id=}, {date=}, {weight=}, {body_fat=}")
 

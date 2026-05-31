@@ -14,7 +14,7 @@ _logger = get_logger()
 
 _MIN_WEIGHT = 0.1
 _MAX_WEIGHT = 300.0
-_MIN_BODY_FAT = 0.0
+_MIN_BODY_FAT = 0.1
 _MAX_BODY_FAT = 99.9
 
 
@@ -62,10 +62,12 @@ class BodyComposition(sql_alchemy.Model):  # type: ignore
         return weight
 
     @validates("body_fat")
-    def validate_body_fat(self, key: str, body_fat: float) -> float:
+    def validate_body_fat(
+        self, key: str, body_fat: float | None
+    ) -> float | None:
         _logger.debug(f"Start: {key=}, {body_fat=}")
 
-        if body_fat:
+        if body_fat is not None:
             validate_number_range(key, body_fat, _MIN_BODY_FAT, _MAX_BODY_FAT)
 
         _logger.debug(f"End: {key=}, {body_fat=}")

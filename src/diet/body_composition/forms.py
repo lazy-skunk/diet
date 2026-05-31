@@ -35,12 +35,12 @@ class RecordBodyCompositionForm(FlaskForm):
     body_fat = FloatField(
         validators=[
             Optional(),
-            NumberRange(min=0, max=99.9),
+            NumberRange(min=0.1, max=99.9),
         ],
         render_kw={
             "class": "form-control",
             "type": "number",
-            "min": "0",
+            "min": "0.1",
             "max": "99.9",
             "step": 0.1,
         },
