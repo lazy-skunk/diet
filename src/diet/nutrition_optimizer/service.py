@@ -8,11 +8,6 @@ from pulp import (
     LpVariable,
 )
 
-from diet.nutrition_optimizer.api_models import (
-    OptimizeRequest,
-    OptimizeResponse,
-    validate_optimize_request,
-)
 from diet.nutrition_optimizer.models import (
     Constraint,
     FoodInformation,
@@ -314,25 +309,17 @@ class NutritionOptimizer:
         }
 
 
-def optimize(payload: object) -> dict[str, object]:
-    _logger.info("Start: optimize nutrition request")
+def optimize(
+    food_information: list[FoodInformation],
+    objective: Objective,
+    constraints: list[Constraint],
+) -> NutritionOptimizerResult:
+    _logger.info("Start: optimize nutrition")
 
-    optimize_request = _parse_optimize_request(payload)
-    food_information, objective, constraints = optimize_request.to_domain()
     nutrition_optimizer = NutritionOptimizer(
         food_information, objective, constraints
     )
     result = nutrition_optimizer.solve()
-    parsed_result = OptimizeResponse.from_domain_result(result).model_dump(
-        by_alias=True
-    )
 
-    _logger.info("End: optimize nutrition request")
-    return parsed_result
-
-
-def _parse_optimize_request(payload: object) -> OptimizeRequest:
-    if payload is None:
-        raise ValueError("Invalid request data: request JSON is required")
-
-    return validate_optimize_request(payload)
+    _logger.info("End: optimize nutrition")
+    return result
