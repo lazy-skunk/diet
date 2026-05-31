@@ -137,11 +137,11 @@ def test_get_body_composition_data_for_anonymous_returns_sample(
     assert response.status_code == 200
     payload = response.get_json()
     assert payload is not None
-    assert len(payload) == 2
-    assert len(payload[0]) > 0
-    assert "date" in payload[0][0]
-    assert "weight" in payload[0][0]
-    assert "body_fat" in payload[0][0]
+    assert len(payload["bodyCompositions"]) > 0
+    assert "date" in payload["bodyCompositions"][0]
+    assert "weight" in payload["bodyCompositions"][0]
+    assert "body_fat" in payload["bodyCompositions"][0]
+    assert "monthlyStatistics" in payload
 
 
 def test_get_body_composition_data_for_auth_user_without_records_returns_empty(
@@ -154,7 +154,7 @@ def test_get_body_composition_data_for_auth_user_without_records_returns_empty(
 
     assert response.status_code == 200
     payload = response.get_json()
-    assert payload == [[], []]
+    assert payload == {"bodyCompositions": [], "monthlyStatistics": []}
 
 
 def test_get_body_composition_data_for_authenticated_user_returns_records(
@@ -177,7 +177,6 @@ def test_get_body_composition_data_for_authenticated_user_returns_records(
     assert response.status_code == 200
     payload = response.get_json()
     assert payload is not None
-    assert len(payload) == 2
-    assert payload[0][0]["date"] == "2026-05-24"
-    assert payload[0][0]["weight"] == 66.6
-    assert payload[0][0]["body_fat"] == 18.2
+    assert payload["bodyCompositions"][0]["date"] == "2026-05-24"
+    assert payload["bodyCompositions"][0]["weight"] == 66.6
+    assert payload["bodyCompositions"][0]["body_fat"] == 18.2

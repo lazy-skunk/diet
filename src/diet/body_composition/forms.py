@@ -11,6 +11,13 @@ from wtforms.validators import (
     Optional,
 )
 
+from diet.body_composition.constants import (
+    MAX_BODY_FAT,
+    MAX_WEIGHT,
+    MIN_BODY_FAT,
+    MIN_WEIGHT,
+)
+
 
 def _today() -> date:
     return date.today()
@@ -24,26 +31,26 @@ class RecordBodyCompositionForm(FlaskForm):
     weight = FloatField(
         validators=[
             InputRequired(),
-            NumberRange(min=0.1, max=300.0),
+            NumberRange(min=MIN_WEIGHT, max=MAX_WEIGHT),
         ],
         render_kw={
             "class": "form-control",
             "type": "number",
-            "min": "0.1",
-            "max": "300.0",
+            "min": str(MIN_WEIGHT),
+            "max": str(MAX_WEIGHT),
             "step": 0.1,
         },
     )
     body_fat = FloatField(
         validators=[
             Optional(),
-            NumberRange(min=0.1, max=99.9),
+            NumberRange(min=MIN_BODY_FAT, max=MAX_BODY_FAT),
         ],
         render_kw={
             "class": "form-control",
             "type": "number",
-            "min": "0.1",
-            "max": "99.9",
+            "min": str(MIN_BODY_FAT),
+            "max": str(MAX_BODY_FAT),
             "step": 0.1,
         },
     )

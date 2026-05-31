@@ -77,6 +77,8 @@ def get_body_composition_data() -> Response:
     monthly_statistics = compute_monthly_statistics(body_composition_data)
 
     return jsonify(
-        body_composition_data,
-        monthly_statistics,
+        {
+            "bodyCompositions": body_composition_data,
+            "monthlyStatistics": monthly_statistics,
+        }
     )

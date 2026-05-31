@@ -152,11 +152,11 @@ function updateTable(bodyCompositionData, granularity) {
 }
 
 async function loadDataAndRender() {
-  const body_composition_data = await fetchApiData(
+  const bodyCompositionResponse = await fetchApiData(
     "body_composition/get_body_composition_data"
   );
-  populateDailyData(body_composition_data[0]);
-  populateMonthlyData(body_composition_data[1]);
+  populateDailyData(bodyCompositionResponse.bodyCompositions);
+  populateMonthlyData(bodyCompositionResponse.monthlyStatistics);
 
   const durationValue = parseInt(
     document.getElementById("duration-dropdown").value
