@@ -22,7 +22,8 @@ def index() -> str:
 @blueprint.route("/optimize", methods=["POST"])
 def optimize() -> Response | tuple[Response, int]:
     try:
-        return jsonify(optimize_nutrition(request))
+        payload = request.get_json(silent=True)
+        return jsonify(optimize_nutrition(payload))
     except ValueError as e:
         _logger.warning(f"Invalid request data: {e}")
         return (

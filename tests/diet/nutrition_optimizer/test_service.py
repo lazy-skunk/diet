@@ -1,11 +1,10 @@
-from flask import Request
 from pytest_mock import MockerFixture
 
 from diet.nutrition_optimizer.service import optimize
 
 
 def test_optimize(mocker: MockerFixture) -> None:
-    mock_request = mocker.Mock(spec=Request)
+    payload = {"foodInformation": []}
     mock_optimize_request = mocker.Mock()
     food_information = mocker.sentinel.food_information
     objective = mocker.sentinel.objective
@@ -33,7 +32,7 @@ def test_optimize(mocker: MockerFixture) -> None:
         return_value=mock_response,
     )
 
-    result = optimize(mock_request)
+    result = optimize(payload)
 
     assert result == {"foodIntakes": {"egg": 2}}
     mock_optimizer_class.assert_called_once_with(

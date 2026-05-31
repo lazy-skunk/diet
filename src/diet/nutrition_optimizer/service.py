@@ -1,4 +1,3 @@
-from flask import Request
 from pulp import (
     LpAffineExpression,
     LpInteger,
@@ -315,10 +314,10 @@ class NutritionOptimizer:
         }
 
 
-def optimize(request: Request) -> dict[str, object]:
+def optimize(payload: object) -> dict[str, object]:
     _logger.info("Start: optimize nutrition request")
 
-    optimize_request = _parse_optimize_request(request)
+    optimize_request = _parse_optimize_request(payload)
     food_information, objective, constraints = optimize_request.to_domain()
     nutrition_optimizer = NutritionOptimizer(
         food_information, objective, constraints
@@ -332,8 +331,7 @@ def optimize(request: Request) -> dict[str, object]:
     return parsed_result
 
 
-def _parse_optimize_request(request: Request) -> OptimizeRequest:
-    payload = request.get_json(silent=True)
+def _parse_optimize_request(payload: object) -> OptimizeRequest:
     if payload is None:
         raise ValueError("Invalid request data: request JSON is required")
 
