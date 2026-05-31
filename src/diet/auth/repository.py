@@ -13,11 +13,6 @@ def create(user: User) -> None:
     _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
 
 
-def update(user: User) -> None:
-    _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
-    _logger.info(f"End: {user.id=}, {user.username=}, {user.email=}")
-
-
 def find_by_email(email: str) -> User | None:
     _logger.info(f"Start: {email=}")
 
