@@ -2,6 +2,7 @@ import re
 
 from flask import Flask
 from flask.testing import FlaskClient
+from pytest_mock import MockerFixture
 
 _OPTIMIZE_REQUEST_JSON = {
     "foodInformation": [
@@ -87,3 +88,28 @@ def test_optimize_with_invalid_request_returns_bad_request(
     assert response.status_code == 400
     assert response.json is not None
     assert response.json["status"] == "Error"
+    assert response.json["message"] == (
+        "Invalid request data: food_information: Field required; "
+        "objective.nutrient: Field required; constraints: Field required"
+    )
+
+
+def test_optimize_with_unexpected_error_hides_internal_details(
+    client: FlaskClient, mocker: MockerFixture
+) -> None:
+    mocker.patch(
+        "diet.nutrition_optimizer.views.optimize_nutrition",
+        side_effect=RuntimeError("solver exploded"),
+    )
+
+    response = client.post(
+        "/nutrition_optimizer/optimize",
+        json=_OPTIMIZE_REQUEST_JSON,
+    )
+
+    assert response.status_code == 500
+    assert response.json is not None
+    assert response.json == {
+        "status": "Error",
+        "message": "Internal server error",
+    }

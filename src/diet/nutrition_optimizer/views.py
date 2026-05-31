@@ -34,13 +34,18 @@ def optimize() -> Response | tuple[Response, int]:
         return jsonify(response.model_dump(by_alias=True))
     except ValueError as e:
         _logger.warning(f"Invalid request data: {e}")
-        return (
-            jsonify({"status": "Error", "message": "Invalid request data"}),
-            400,
-        )
+        return jsonify({"status": "Error", "message": str(e)}), 400
     except Exception as e:
-        _logger.warning(f"Error during optimization: {e}")
-        return jsonify({"status": "Error", "message": str(e)}), 500
+        _logger.error(f"Error during optimization: {e}", exc_info=True)
+        return (
+            jsonify(
+                {
+                    "status": "Error",
+                    "message": "Internal server error",
+                }
+            ),
+            500,
+        )
 
 
 def _parse_optimize_request(payload: object) -> OptimizeRequest:
