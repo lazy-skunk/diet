@@ -49,18 +49,7 @@ def get_body_composition_dicts(
     _logger.info(f"Start: {user_id=}")
 
     records = get_body_compositions(user_id)
-    data: list[dict[str, str | float | None]]
-    if not records:
-        _logger.info("Progress: Generate empty chart data")
-        data = [
-            {
-                "date": datetime.date(1, 1, 1).strftime("%Y-%m-%d"),
-                "weight": 0.1,
-                "body_fat": 0.1,
-            }
-        ]
-    else:
-        data = _body_compositions_to_dicts(records)
+    data = _body_compositions_to_dicts(records)
 
     _logger.info(f"End: {user_id=}, {len(data)=}")
     return data
@@ -70,6 +59,10 @@ def compute_monthly_statistics(
     body_composition_dicts: list[dict[str, str | float | None]],
 ) -> list[dict[str, float | None]]:
     _logger.info(f"Start: {len(body_composition_dicts)=}")
+
+    if not body_composition_dicts:
+        _logger.info("End: no data")
+        return []
 
     body_composition_df = _prepare_body_composition_dataframe(
         body_composition_dicts

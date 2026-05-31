@@ -144,6 +144,19 @@ def test_get_body_composition_data_for_anonymous_returns_sample(
     assert "body_fat" in payload[0][0]
 
 
+def test_get_body_composition_data_for_auth_user_without_records_returns_empty(
+    client: FlaskClient, create_user: Callable[..., User]
+) -> None:
+    create_user(email="empty-bc@example.com", password="Password123!")
+    _signin(client, "empty-bc@example.com", "Password123!")
+
+    response = client.get("/body_composition/get_body_composition_data")
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload == [[], []]
+
+
 def test_get_body_composition_data_for_authenticated_user_returns_records(
     client: FlaskClient, create_user: Callable[..., User]
 ) -> None:
