@@ -57,7 +57,7 @@ def get_body_composition_dicts(
 
 def compute_monthly_statistics(
     body_composition_dicts: list[dict[str, str | float | None]],
-) -> list[dict[str, float | None]]:
+) -> list[dict[str, str | float | None]]:
     _logger.info(f"Start: {len(body_composition_dicts)=}")
 
     if not body_composition_dicts:
@@ -98,7 +98,7 @@ def _compute_df(body_composition_df: DataFrame) -> DataFrame:
     return monthly_stats_df
 
 
-def _df_to_json(df: DataFrame) -> list[dict[str, float | None]]:
+def _df_to_json(df: DataFrame) -> list[dict[str, str | float | None]]:
     str_json = df.to_json(orient="records")
     json_data = json.loads(str_json)
     return json_data

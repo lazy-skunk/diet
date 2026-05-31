@@ -11,6 +11,9 @@ from flask_login import current_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.wrappers import Response
 
+from diet.body_composition.api_models import (
+    create_body_composition_data_response,
+)
 from diet.body_composition.sample_data import generate_sample_data
 from diet.body_composition.service import (
     compute_monthly_statistics,
@@ -76,9 +79,7 @@ def get_body_composition_data() -> Response:
 
     monthly_statistics = compute_monthly_statistics(body_composition_data)
 
-    return jsonify(
-        {
-            "bodyCompositions": body_composition_data,
-            "monthlyStatistics": monthly_statistics,
-        }
+    response = create_body_composition_data_response(
+        body_composition_data, monthly_statistics
     )
+    return jsonify(response.model_dump(by_alias=True))

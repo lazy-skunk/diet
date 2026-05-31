@@ -19,15 +19,15 @@ async function fetchApiData(apiEndpoint) {
 function populateDailyData(dailyDataSet) {
   dailyData.date = dailyDataSet.map((item) => item.date);
   dailyData.weight = dailyDataSet.map((item) => item.weight);
-  dailyData.bodyFat = dailyDataSet.map((item) => item.body_fat);
+  dailyData.bodyFat = dailyDataSet.map((item) => item.bodyFat);
 }
 
 function populateMonthlyData(monthlyDataSet) {
   monthlyData.date = monthlyDataSet.map((item) => item.date);
   monthlyData.weight = monthlyDataSet.map((item) => item.weight);
-  monthlyData.bodyFat = monthlyDataSet.map((item) => item.body_fat);
+  monthlyData.bodyFat = monthlyDataSet.map((item) => item.bodyFat);
   monthlyData.weightChangeRate = monthlyDataSet.map(
-    (item) => item.weight_change_rate
+    (item) => item.weightChangeRate
   );
 }
 
