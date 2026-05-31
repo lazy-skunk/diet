@@ -4,7 +4,7 @@ from diet.nutrition_optimizer.service import optimize
 
 
 def test_optimize(mocker: MockerFixture) -> None:
-    payload = {"foodInformation": []}
+    payload: dict[str, object] = {"foodInformation": []}
     mock_optimize_request = mocker.Mock()
     food_information = mocker.sentinel.food_information
     objective = mocker.sentinel.objective
@@ -15,7 +15,7 @@ def test_optimize(mocker: MockerFixture) -> None:
         constraints,
     )
 
-    mocker.patch(
+    mock_parse_optimize_request = mocker.patch(
         "diet.nutrition_optimizer.service._parse_optimize_request",
         return_value=mock_optimize_request,
     )
@@ -35,6 +35,7 @@ def test_optimize(mocker: MockerFixture) -> None:
     result = optimize(payload)
 
     assert result == {"foodIntakes": {"egg": 2}}
+    mock_parse_optimize_request.assert_called_once_with(payload)
     mock_optimizer_class.assert_called_once_with(
         food_information, objective, constraints
     )
