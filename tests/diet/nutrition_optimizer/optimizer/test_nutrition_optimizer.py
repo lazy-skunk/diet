@@ -9,7 +9,7 @@ from diet.nutrition_optimizer.models import (
     Objective,
     OptimalNutritionOptimizerResult,
 )
-from diet.nutrition_optimizer.service import NutritionOptimizer
+from diet.nutrition_optimizer.optimizer import NutritionOptimizer
 
 _FOOD_INFORMATION = [
     FoodInformation(
