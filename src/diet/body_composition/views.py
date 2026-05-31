@@ -11,9 +11,9 @@ from flask_login import current_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.wrappers import Response
 
+from diet.body_composition.sample_data import generate_sample_data
 from diet.body_composition.service import (
     compute_monthly_statistics,
-    generate_sample_data,
     get_body_composition_dicts,
     init_form_data,
     upsert_body_composition,
