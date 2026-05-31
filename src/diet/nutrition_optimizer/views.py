@@ -1,13 +1,12 @@
 from flask import Blueprint, Response, jsonify, render_template, request
 
-from diet.nutrition_optimizer.optimizer.nutrition_optimizer import (
-    NutritionOptimizer,
+from diet.nutrition_optimizer.api_models import (
+    OptimizeRequest,
+    OptimizeResponse,
+    validate_optimize_request,
 )
-from diet.nutrition_optimizer.optimizer.utilities import (
-    convert_top_level_keys_to_camel_case,
-    parse_request_data,
-)
-from diet.utils.custom_logger import CustomLogger
+from diet.nutrition_optimizer.service import optimize as optimize_nutrition
+from diet.utils.custom_logger import get_logger
 
 blueprint = Blueprint(
     "nutrition_optimizer",
@@ -17,7 +16,7 @@ blueprint = Blueprint(
     url_prefix="/nutrition_optimizer",
 )
 
-_logger = CustomLogger.get_logger()
+_logger = get_logger()
 
 
 @blueprint.route("/")
@@ -26,20 +25,31 @@ def index() -> str:
 
 
 @blueprint.route("/optimize", methods=["POST"])
-def optimize() -> Response:
+def optimize() -> Response | tuple[Response, int]:
     try:
-        food_information, objective, constraints = parse_request_data(request)
-
-        nutrition_optimizer = NutritionOptimizer(
-            food_information, objective, constraints
-        )
-        result = nutrition_optimizer.solve()
-
-        parsed_result = convert_top_level_keys_to_camel_case(result)
-        return jsonify(parsed_result)
+        payload = request.get_json(silent=True)
+        optimize_request = _parse_optimize_request(payload)
+        result = optimize_nutrition(*optimize_request.to_domain())
+        response = OptimizeResponse.from_domain_result(result)
+        return jsonify(response.model_dump(by_alias=True))
     except ValueError as e:
         _logger.warning(f"Invalid request data: {e}")
-        return jsonify({"status": "Error", "message": "Invalid request data"})
-    except Exception as e:  # pragma: no cover
-        _logger.warning(f"Error during optimization: {e}")
-        return jsonify({"status": "Error", "message": str(e)})
+        return jsonify({"status": "Error", "message": str(e)}), 400
+    except Exception as e:
+        _logger.error(f"Error during optimization: {e}", exc_info=True)
+        return (
+            jsonify(
+                {
+                    "status": "Error",
+                    "message": "Internal server error",
+                }
+            ),
+            500,
+        )
+
+
+def _parse_optimize_request(payload: object) -> OptimizeRequest:
+    if payload is None:
+        raise ValueError("Invalid request data: request JSON is required")
+
+    return validate_optimize_request(payload)

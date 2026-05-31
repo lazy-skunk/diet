@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from diet.nutrition_optimizer.optimizer.constraint import Constraint
+from diet.nutrition_optimizer.models import Constraint
 
 
 def test_valid_constraint() -> None:
@@ -88,3 +88,52 @@ def test_zero_value() -> None:
     )
 
     assert constraint.value == 0
+
+
+def test_energy_constraint_must_use_energy_unit() -> None:
+    with pytest.raises(
+        ValueError, match="Energy constraints must use the energy unit."
+    ):
+        Constraint(
+            min_max="min",
+            nutrient="energy",
+            unit="ratio",
+            value=10,
+        )
+
+
+def test_macronutrient_constraint_must_not_use_energy_unit() -> None:
+    with pytest.raises(
+        ValueError,
+        match="Macronutrient constraints must use amount or ratio units.",
+    ):
+        Constraint(
+            min_max="min",
+            nutrient="protein",
+            unit="energy",
+            value=10,
+        )
+
+
+def test_ratio_value_must_not_exceed_100() -> None:
+    with pytest.raises(
+        ValueError,
+        match="Ratio constraint value must be between 0 and 100. Got 101.",
+    ):
+        Constraint(
+            min_max="max",
+            nutrient="protein",
+            unit="ratio",
+            value=101,
+        )
+
+
+def test_ratio_value_allows_100() -> None:
+    constraint = Constraint(
+        min_max="max",
+        nutrient="protein",
+        unit="ratio",
+        value=100,
+    )
+
+    assert constraint.value == 100

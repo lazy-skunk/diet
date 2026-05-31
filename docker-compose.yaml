@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/app
-      - ~/.gitconfig:/root/.gitconfig
+      - ~/.gitconfig:/root/.gitconfig:ro
     ports:
       - "5000:5000"
     command: uv run flask run --host=0.0.0.0

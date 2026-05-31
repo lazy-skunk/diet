@@ -1,6 +1,6 @@
 import pytest
 
-from diet.nutrition_optimizer.optimizer.food_information import FoodInformation
+from diet.nutrition_optimizer.models import FoodInformation
 
 
 def test_valid_food_information() -> None:

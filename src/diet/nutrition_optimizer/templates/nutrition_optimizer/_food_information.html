@@ -16,28 +16,60 @@
     <tbody id="food-inputs">
         <tr>
             <td>
-                <input type="text" class="form-control" name="food-name" />
+                <input type="text" class="form-control" name="food-name" required />
             </td>
             <td>
-                <input type="number" class="form-control" name="food-energy" />
+                <input type="number"
+                       class="form-control"
+                       name="food-energy"
+                       min="0"
+                       step="any"
+                       required />
             </td>
             <td>
-                <input type="number" class="form-control" name="food-protein" />
+                <input type="number"
+                       class="form-control"
+                       name="food-protein"
+                       min="0"
+                       step="any"
+                       required />
             </td>
             <td>
-                <input type="number" class="form-control" name="food-fat" />
+                <input type="number"
+                       class="form-control"
+                       name="food-fat"
+                       min="0"
+                       step="any"
+                       required />
             </td>
             <td>
-                <input type="number" class="form-control" name="food-carbohydrates" />
+                <input type="number"
+                       class="form-control"
+                       name="food-carbohydrates"
+                       min="0"
+                       step="any"
+                       required />
             </td>
             <td>
-                <input type="number" class="form-control" name="food-grams-per-unit" />
+                <input type="number"
+                       class="form-control"
+                       name="food-grams-per-unit"
+                       min="1"
+                       required />
             </td>
             <td>
-                <input type="number" class="form-control" name="food-minimum-intake" />
+                <input type="number"
+                       class="form-control"
+                       name="food-minimum-intake"
+                       min="0"
+                       required />
             </td>
             <td>
-                <input type="number" class="form-control" name="food-maximum-intake" />
+                <input type="number"
+                       class="form-control"
+                       name="food-maximum-intake"
+                       min="0"
+                       required />
             </td>
             <td class="no-action"></td>
         </tr>
@@ -51,28 +83,60 @@
 <template id="food-template">
     <tr>
         <td>
-            <input type="text" class="form-control" name="food-name" />
+            <input type="text" class="form-control" name="food-name" required />
         </td>
         <td>
-            <input type="number" class="form-control" name="food-energy" />
+            <input type="number"
+                   class="form-control"
+                   name="food-energy"
+                   min="0"
+                   step="any"
+                   required />
         </td>
         <td>
-            <input type="number" class="form-control" name="food-protein" />
+            <input type="number"
+                   class="form-control"
+                   name="food-protein"
+                   min="0"
+                   step="any"
+                   required />
         </td>
         <td>
-            <input type="number" class="form-control" name="food-fat" />
+            <input type="number"
+                   class="form-control"
+                   name="food-fat"
+                   min="0"
+                   step="any"
+                   required />
         </td>
         <td>
-            <input type="number" class="form-control" name="food-carbohydrates" />
+            <input type="number"
+                   class="form-control"
+                   name="food-carbohydrates"
+                   min="0"
+                   step="any"
+                   required />
         </td>
         <td>
-            <input type="number" class="form-control" name="food-grams-per-unit" />
+            <input type="number"
+                   class="form-control"
+                   name="food-grams-per-unit"
+                   min="1"
+                   required />
         </td>
         <td>
-            <input type="number" class="form-control" name="food-minimum-intake" />
+            <input type="number"
+                   class="form-control"
+                   name="food-minimum-intake"
+                   min="0"
+                   required />
         </td>
         <td>
-            <input type="number" class="form-control" name="food-maximum-intake" />
+            <input type="number"
+                   class="form-control"
+                   name="food-maximum-intake"
+                   min="0"
+                   required />
         </td>
         <td>
             <button type="button" class="btn btn-outline-danger">Remove</button>

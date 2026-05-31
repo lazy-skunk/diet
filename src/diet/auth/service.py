@@ -1,90 +1,85 @@
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from diet.auth.models import User
-from diet.auth.repository import UserRepository
-from diet.utils.custom_logger import CustomLogger
+from diet.auth.repository import create, find_by_email
+from diet.utils.custom_logger import get_logger
+from diet.utils.transaction import commit
 
-_logger = CustomLogger.get_logger()
+_logger = get_logger()
 
 
-class UserService:
-    @staticmethod
-    def create(username: str, email: str, password: str) -> User:
-        _logger.info(f"Start: {username=}, {email=}")
+def register_user(username: str, email: str, password: str) -> User:
+    _logger.info(f"Start: {username=}, {email=}")
 
-        new_user = User(username=username, email=email)
-        new_user.password_hash = generate_password_hash(password)
+    normalized_email = email.strip().lower()
+    if find_by_email(normalized_email):
+        _logger.info(f"End: failed (Email already registered) - {email=}")
+        raise ValueError("Email is already registered.")
 
-        UserRepository.create(new_user)
+    new_user = User(username=username, email=normalized_email)
+    new_user.password_hash = generate_password_hash(password)
 
+    try:
+        create(new_user)
+        commit()
+    except IntegrityError as e:
+        raise ValueError("Email is already registered.") from e
+
+    _logger.info(
+        f"End: {new_user.id=} {new_user.username=}, {new_user.email=}"
+    )
+    return new_user
+
+
+def authenticate_user(email: str, password: str) -> User | None:
+    _logger.info(f"Start: {email=}")
+
+    normalized_email = email.strip().lower()
+    user: User | None = find_by_email(normalized_email)
+
+    if not user:
+        _logger.info(f"End: failed (User not found) - {email=}")
+        return None
+
+    if check_password_hash(user.password_hash, password):
         _logger.info(
-            f"End: {new_user.id=} {new_user.username=}, {new_user.email=}"
+            f"End: succeeded - {user.id=}, {user.username=}, {user.email=}"
         )
-        return new_user
+        return user
 
-    @staticmethod
-    def authenticate(email: str, password: str) -> User | None:
-        _logger.info(f"Start: {email=}")
+    _logger.info(
+        f"End: failed (Invalid credentials) - {user.id=}"
+        f", {user.username=}, {user.email=}"
+    )
+    return None
 
-        user: User | None = UserRepository.find_by_email(email)
 
-        if not user:
-            _logger.info(f"End: failed (User not found) - {email=}")
-            return None
+def update_password(
+    user: User, current_password: str, new_password: str
+) -> None:
+    _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
 
-        if check_password_hash(user.password_hash, password):
-            _logger.info(
-                f"End: succeeded - {user.id=}, {user.username=}, {user.email=}"
-            )
-            return user
-        else:
-            _logger.info(
-                f"End: failed (Invalid credentials) - {user.id=}"
-                f", {user.username=}, {user.email=}"
-            )
-            return None
+    if not check_password_hash(user.password_hash, current_password):
+        _logger.info(
+            f"End: failed (Invalid credentials) - {user.id=}"
+            f", {user.username=}, {user.email=}"
+        )
+        raise ValueError("Invalid current password.")
 
-    @staticmethod
-    def change_password(
-        user: User, current_password: str, new_password: str
-    ) -> bool:
-        _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
+    user.password_hash = generate_password_hash(new_password)
+    commit()
+    _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")
 
-        if not check_password_hash(user.password_hash, current_password):
-            _logger.info(
-                f"End: failed (Invalid credentials) - {user.id=}"
-                f", {user.username=}, {user.email=}"
-            )
-            return False
 
-        try:
-            user.password_hash = generate_password_hash(new_password)
-            UserRepository.update(user)
-            _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")
-            return True
-        except SQLAlchemyError as e:
-            _logger.error(e, exc_info=True)
-            return False
+def update_username(user: User, new_username: str) -> None:
+    _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
 
-    @staticmethod
-    def change_username(user: User, new_username: str) -> bool:
-        _logger.info(f"Start: {user.id=}, {user.username=}, {user.email=}")
+    normalized_username = new_username.strip()
+    if user.username == normalized_username:
+        _logger.info(f"End: unchanged - {user.id=}, {user.username=}")
+        return
 
-        try:
-            user.username = new_username
-            UserRepository.update(user)
-            _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")
-            return True
-        except SQLAlchemyError as e:
-            _logger.error(e, exc_info=True)
-            return False
-
-    # @staticmethod
-    # def validate_unique(model: Any, key: str, value: str) -> None:
-    #     exists = model.query.filter(getattr(model, key) == value).first()
-    #     if exists:
-    #         reason = f"{value} cannot be used"
-    #         message = _VALIDATION_FAILED_MSG.format(key=key, reason=reason)
-    #         _logger.warning(message)
-    #         raise ValueError(message)
+    user.username = normalized_username
+    commit()
+    _logger.info(f"End: {user.id=} {user.username=}, {user.email=}")

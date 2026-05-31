@@ -3,71 +3,68 @@ import os
 from logging import Formatter, Logger, StreamHandler
 from logging.handlers import RotatingFileHandler
 
-from diet.utils.directory_util import DirectoryUtil
+from diet.config import get_log_settings
 
-_DEFAULT_LOG_LEVEL = logging.DEBUG
-_DEFAULT_LOG_PATH = "log/app.log"
-_DEFAULT_LOG_SIZE = 1024 * 1024 * 10
-_DEFAULT_LOG_BACKUP = 3
+_log_settings = get_log_settings()
+
+_STREAM_HANDLER_NAME = "diet_stream_handler"
+_FILE_HANDLER_NAME = "diet_file_handler"
 
 
-class CustomLogger:
-    _logger: Logger | None = None
+def get_logger() -> Logger:
+    logger = logging.getLogger(__name__)
 
-    @classmethod
-    def get_logger(cls) -> Logger:
-        cls._initialize()
+    if _has_configured_handlers(logger):
+        return logger
 
-        if cls._logger is None:  # pragma: no cover
-            raise RuntimeError("Logger has not been initialized.")
+    log_level = _log_settings.log_level
+    logger.setLevel(log_level)
 
-        return cls._logger
+    log_path = _log_settings.log_path
+    _ensure_log_directory(log_path)
 
-    @classmethod
-    def _initialize(cls) -> None:
-        if cls._logger is None:
-            cls._logger = logging.getLogger(__name__)
+    formatter = Formatter(
+        "%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    _add_stream_handler(logger, log_level, formatter)
+    _add_rotating_file_handler(logger, log_level, log_path, formatter)
 
-            log_level = os.getenv("LOG_LEVEL", _DEFAULT_LOG_LEVEL)
-            cls._logger.setLevel(log_level)
+    return logger
 
-            log_path = os.getenv("LOG_PATH", _DEFAULT_LOG_PATH)
-            DirectoryUtil.ensure_directory(log_path)
 
-            formatter = Formatter(
-                "%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s",  # noqa E501
-                datefmt="%Y-%m-%d %H:%M:%S",
-            )
-            cls._add_stream_handler(log_level, formatter)
-            cls._add_rotating_file_handler(log_level, log_path, formatter)
+def _has_configured_handlers(logger: Logger) -> bool:
+    handler_names = {handler.get_name() for handler in logger.handlers}
+    return {_STREAM_HANDLER_NAME, _FILE_HANDLER_NAME}.issubset(handler_names)
 
-    @classmethod
-    def _add_stream_handler(
-        cls, log_level: str | int, formatter: Formatter
-    ) -> None:
-        if cls._logger is None:  # pragma: no cover
-            raise RuntimeError("Logger has not been initialized.")
 
-        stream_handler = StreamHandler()
-        stream_handler.setLevel(log_level)
-        stream_handler.setFormatter(formatter)
+def _ensure_log_directory(path: str) -> None:
+    dir_path = os.path.dirname(path)
+    if dir_path:
+        os.makedirs(dir_path, exist_ok=True)
 
-        cls._logger.addHandler(stream_handler)
 
-    @classmethod
-    def _add_rotating_file_handler(
-        cls, log_level: str | int, log_path: str, formatter: Formatter
-    ) -> None:
-        if cls._logger is None:  # pragma: no cover
-            raise RuntimeError("Logger has not been initialized.")
+def _add_stream_handler(
+    logger: Logger, log_level: str | int, formatter: Formatter
+) -> None:
+    stream_handler = StreamHandler()
+    stream_handler.set_name(_STREAM_HANDLER_NAME)
+    stream_handler.setLevel(log_level)
+    stream_handler.setFormatter(formatter)
 
-        log_size = int(os.getenv("LOG_SIZE", _DEFAULT_LOG_SIZE))
-        log_backup = int(os.getenv("LOG_BACKUP", _DEFAULT_LOG_BACKUP))
+    logger.addHandler(stream_handler)
 
-        rotating_file_handler = RotatingFileHandler(
-            log_path, maxBytes=log_size, backupCount=log_backup
-        )
-        rotating_file_handler.setLevel(log_level)
-        rotating_file_handler.setFormatter(formatter)
 
-        cls._logger.addHandler(rotating_file_handler)
+def _add_rotating_file_handler(
+    logger: Logger, log_level: str | int, log_path: str, formatter: Formatter
+) -> None:
+    rotating_file_handler = RotatingFileHandler(
+        log_path,
+        maxBytes=_log_settings.log_size,
+        backupCount=_log_settings.log_backup,
+    )
+    rotating_file_handler.set_name(_FILE_HANDLER_NAME)
+    rotating_file_handler.setLevel(log_level)
+    rotating_file_handler.setFormatter(formatter)
+
+    logger.addHandler(rotating_file_handler)

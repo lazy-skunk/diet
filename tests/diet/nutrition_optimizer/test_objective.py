@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from diet.nutrition_optimizer.optimizer.objective import Objective
+from diet.nutrition_optimizer.models import Objective
 
 
 def test_valid_objective() -> None:

@@ -6,5 +6,6 @@
         "monosans.djlint",
         "ms-python.mypy-type-checker",
         "ms-python.python",
+        "ms-vscode.live-server"
     ]
 }

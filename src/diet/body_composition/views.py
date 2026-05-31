@@ -11,7 +11,18 @@ from flask_login import current_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.wrappers import Response
 
-from diet.body_composition.service import BodyCompositionService
+from diet.body_composition.api_models import (
+    create_body_composition_data_response,
+)
+from diet.body_composition.sample_data import generate_sample_data
+from diet.body_composition.service import (
+    compute_monthly_statistics,
+    init_form_data,
+    upsert_body_composition,
+)
+from diet.body_composition.service import (
+    get_body_composition_data as get_user_body_composition_data,
+)
 
 from .forms import RecordBodyCompositionForm
 
@@ -31,7 +42,7 @@ def record_body_composition() -> str | Response:
     form = RecordBodyCompositionForm()
 
     if request.method == "GET":
-        form_data = BodyCompositionService.init_form_data(user_id)
+        form_data = init_form_data(user_id)
         form.weight.data = form_data["weight"]
         form.body_fat.data = form_data["body_fat"]
         return render_template(
@@ -44,9 +55,7 @@ def record_body_composition() -> str | Response:
         body_fat = form.body_fat.data
 
         try:
-            BodyCompositionService.upsert(
-                user_id, input_date, weight, body_fat
-            )
+            upsert_body_composition(user_id, input_date, weight, body_fat)
             flash("Body composition data saved successfully.", "success")
             return redirect(url_for("main.index"))
         except (ValueError, TypeError) as e:
@@ -66,17 +75,13 @@ def record_body_composition() -> str | Response:
 def get_body_composition_data() -> Response:
     if current_user.is_authenticated:
         user_id = current_user.id
-        body_composition_data = (
-            BodyCompositionService.get_body_composition_dicts(user_id)
-        )
+        body_composition_data = get_user_body_composition_data(user_id)
     else:
-        body_composition_data = BodyCompositionService.generate_sample_data()
+        body_composition_data = generate_sample_data()
 
-    monthly_statistics = BodyCompositionService.compute_monthly_statistics(
-        body_composition_data
-    )
+    monthly_statistics = compute_monthly_statistics(body_composition_data)
 
-    return jsonify(
-        body_composition_data,
-        monthly_statistics,
+    response = create_body_composition_data_response(
+        body_composition_data, monthly_statistics
     )
+    return jsonify(response.model_dump(by_alias=True))

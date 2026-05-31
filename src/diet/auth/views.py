@@ -9,7 +9,12 @@ from diet.auth.forms import (
     SigninForm,
     SignupForm,
 )
-from diet.auth.service import UserService
+from diet.auth.service import (
+    authenticate_user,
+    register_user,
+    update_password,
+    update_username,
+)
 
 blueprint = Blueprint(
     "auth",
@@ -30,7 +35,7 @@ def signup() -> str | Response:
         password = form.password.data
 
         try:
-            new_user = UserService.create(username, email, password)
+            new_user = register_user(username, email, password)
         except (ValueError, TypeError) as e:
             flash(str(e), "danger")
             return render_template("auth/signup.html", form=form)
@@ -53,7 +58,7 @@ def signin() -> str | Response:
         email = form.email.data
         password = form.password.data
 
-        user = UserService.authenticate(email, password)
+        user = authenticate_user(email, password)
 
         if user:
             login_user(user)
@@ -81,16 +86,17 @@ def account_menu() -> str:
 
 @blueprint.route("/account_information", methods=["GET", "POST"])
 @login_required
-def account_information() -> str:
+def account_information() -> str | Response:
     form = AccountInformationForm()
     if form.validate_on_submit():
         new_username = form.username.data
-        is_succeeded = UserService.change_username(current_user, new_username)
-
-        if is_succeeded:
-            flash("Usename changed successfully.", "success")
+        try:
+            update_username(current_user, new_username)
+        except SQLAlchemyError:
+            flash("Username change failed. Please try again later.", "danger")
         else:
-            flash("Usename change failed.", "danger")
+            flash("Username changed successfully.", "success")
+            return redirect(url_for("auth.account_information"))
 
     form.username.data = current_user.username
     return render_template("auth/account_information.html", form=form)
@@ -110,15 +116,15 @@ def change_password() -> str | Response:
     if form.validate_on_submit():
         current_password = form.current_password.data
         new_password = form.new_password.data
-        is_succeeded = UserService.change_password(
-            current_user, current_password, new_password
-        )
-
-        if is_succeeded:
-            flash("Password changed successfully.", "success")
-            return render_template("auth/account_menu.html")
+        try:
+            update_password(current_user, current_password, new_password)
+        except ValueError as e:
+            flash(str(e), "danger")
+        except SQLAlchemyError:
+            flash("Password change failed. Please try again later.", "danger")
         else:
-            flash("Invalid current password.", "danger")
+            flash("Password changed successfully.", "success")
+            return redirect(url_for("auth.account_menu"))
 
     return render_template("auth/change_password.html", form=form)
 

@@ -1,6 +1,5 @@
-from typing import TypedDict
-
 from pulp import (
+    LpAffineExpression,
     LpInteger,
     LpMaximize,
     LpMinimize,
@@ -9,18 +8,15 @@ from pulp import (
     LpVariable,
 )
 
-from diet.nutrition_optimizer.optimizer.constraint import Constraint
-from diet.nutrition_optimizer.optimizer.food_information import FoodInformation
-from diet.nutrition_optimizer.optimizer.objective import Objective
-from diet.utils.custom_logger import CustomLogger
+from diet.nutrition_optimizer.models import (
+    Constraint,
+    FoodInformation,
+    NutritionOptimizerResult,
+    Objective,
+)
+from diet.utils.custom_logger import get_logger
 
-
-class NutritionOptimizerResult(TypedDict, total=False):
-    status: str
-    food_intakes: dict[str, float | None]
-    total_nutrient_values: dict[str, float]
-    pfc_ratio: dict[str, float]
-    message: str
+_logger = get_logger()
 
 
 class NutritionOptimizer:
@@ -35,58 +31,73 @@ class NutritionOptimizer:
         self._food_information = food_information
         self._objective = objective
         self._constraints = constraints
-
-        self._logger = CustomLogger.get_logger()
+        self._validate_food_names_are_unique()
 
         self._food_intake_variables: dict[str, LpVariable] = {}
-        self._problem: LpProblem
+        self._problem: LpProblem = self._create_lp_problem()
+        self._objective_variables: dict[str, float | LpAffineExpression] = {
+            nutrient: 0.0 for nutrient in FoodInformation.NUTRIENTS
+        }
 
-        self._total_energy: float = 0.0
-        self._total_protein: float = 0.0
-        self._total_fat: float = 0.0
-        self._total_carbohydrates: float = 0.0
+    def _validate_food_names_are_unique(self) -> None:
+        food_names = [item.name for item in self._food_information]
+        duplicate_food_names = {
+            food_name
+            for food_name in food_names
+            if food_names.count(food_name) > 1
+        }
+        if duplicate_food_names:
+            duplicate_names = ", ".join(sorted(duplicate_food_names))
+            raise ValueError(f"Food names must be unique: {duplicate_names}.")
 
     def _setup_food_intake_variables(self) -> None:
-        self._logger.info("Setting up food intake variables.")
+        _logger.info("Setting up food intake variables.")
 
         for food_information in self._food_information:
-            self._food_intake_variables[food_information.name] = LpVariable(
-                food_information.name,
-                lowBound=food_information.minimum_intake,
-                upBound=food_information.maximum_intake,
-                cat=LpInteger,
+            self._food_intake_variables[food_information.name] = (
+                self._problem.add_variable(
+                    food_information.name,
+                    lowBound=food_information.minimum_intake,
+                    upBound=food_information.maximum_intake,
+                    cat=LpInteger,
+                )
             )
 
-        self._logger.info("Completed setting up food intake variables.")
+        _logger.info("Completed setting up food intake variables.")
 
-    def _get_objective_variable(self, nutrient: str) -> float:
-        nutrient_attribute = f"_total_{nutrient}"
-        return getattr(self, nutrient_attribute)
+    def _get_objective_variable(
+        self, nutrient: str
+    ) -> float | LpAffineExpression:
+        return self._objective_variables[nutrient]
 
-    def _setup_lp_problem(self) -> None:
-        self._logger.info("Setting up LP problem.")
-
+    def _create_lp_problem(self) -> LpProblem:
         objective = (
             LpMaximize if self._objective.sense == "maximize" else LpMinimize
         )
         objective_name = f"{self._objective.sense}_{self._objective.nutrient}"
 
-        self._problem = LpProblem(objective_name, objective)
+        return LpProblem(objective_name, objective)
+
+    def _setup_objective(self) -> None:
+        _logger.info("Setting up objective.")
+
+        objective_name = f"{self._objective.sense}_{self._objective.nutrient}"
         self._problem += (
             self._get_objective_variable(self._objective.nutrient),
             objective_name,
         )
 
-        self._logger.info("Completed setting up LP problem.")
+        _logger.info("Completed setting up objective.")
 
     def _update_objective_variable(
-        self, nutrient: str, objective_variables: float
+        self,
+        nutrient: str,
+        objective_variables: float | LpAffineExpression,
     ) -> None:
-        nutrient_attribute = f"_total_{nutrient}"
-        setattr(self, nutrient_attribute, objective_variables)
+        self._objective_variables[nutrient] = objective_variables
 
     def _setup_objective_variables(self) -> None:
-        self._logger.info("Setting up objective variables.")
+        _logger.info("Setting up objective variables.")
 
         for food_information in self._food_information:
             for nutrient in FoodInformation.NUTRIENTS:
@@ -106,10 +117,10 @@ class NutritionOptimizer:
                     current_objective_variables + objective_variable,
                 )
 
-        self._logger.info("Completed setting up objective variables.")
+        _logger.info("Completed setting up objective variables.")
 
     def _apply_amount_or_energy_constraint(
-        self, constraint: Constraint
+        self, constraint: Constraint, constraint_index: int
     ) -> None:
         constraint_operations = {
             "max": lambda objective_variable, value: (
@@ -121,7 +132,8 @@ class NutritionOptimizer:
         }
 
         constraint_name = (
-            f"{constraint.min_max}_{constraint.nutrient}_{constraint.unit}"
+            f"{constraint_index}_{constraint.min_max}_"
+            f"{constraint.nutrient}_{constraint.unit}"
         )
         objective_variable = self._get_objective_variable(constraint.nutrient)
 
@@ -138,8 +150,11 @@ class NutritionOptimizer:
         )
         return getattr(FoodInformation, nutrient_energy_per_gram_attribute)
 
-    def _apply_ratio_constraint(self, constraint: Constraint) -> None:
+    def _apply_ratio_constraint(
+        self, constraint: Constraint, constraint_index: int
+    ) -> None:
         objective_variable = self._get_objective_variable(constraint.nutrient)
+        total_energy = self._get_objective_variable("energy")
         nutrient_energy_per_gram = self._get_nutrient_energy_per_gram(
             constraint.nutrient
         )
@@ -148,20 +163,21 @@ class NutritionOptimizer:
         calculation_factor = constraint.value / self._GRAM_CALCULATION_FACTOR
         comparison_operations = {
             "max": lambda nutrient_energy: (
-                nutrient_energy <= self._total_energy * calculation_factor
+                nutrient_energy <= total_energy * calculation_factor
             ),
             "min": lambda nutrient_energy: (
-                nutrient_energy >= self._total_energy * calculation_factor
+                nutrient_energy >= total_energy * calculation_factor
             ),
         }
 
         self._problem += (
             comparison_operations[constraint.min_max](total_nutrient_energy),
-            f"{constraint.min_max}_{constraint.nutrient}_{constraint.unit}",
+            f"{constraint_index}_{constraint.min_max}_"
+            f"{constraint.nutrient}_{constraint.unit}",
         )
 
     def _setup_constraints(self) -> None:
-        self._logger.info("Setting up constraints.")
+        _logger.info("Setting up constraints.")
 
         apply_methods = {
             "amount": self._apply_amount_or_energy_constraint,
@@ -169,31 +185,36 @@ class NutritionOptimizer:
             "ratio": self._apply_ratio_constraint,
         }
 
-        for constraint in self._constraints:
-            apply_methods[constraint.unit](constraint)
+        for constraint_index, constraint in enumerate(
+            self._constraints, start=1
+        ):
+            apply_methods[constraint.unit](constraint, constraint_index)
 
-        self._logger.info("Completed setting up constraints.")
+        _logger.info("Completed setting up constraints.")
 
-    def _calculate_food_intakes(self) -> dict[str, float | None]:
+    def _get_food_intake_value(self, food_name: str) -> float:
+        food_intake_value = self._food_intake_variables[food_name].varValue
+        if food_intake_value is None:
+            raise RuntimeError(f"Food intake value is missing: {food_name}.")
+
+        return food_intake_value
+
+    def _calculate_food_intakes(self) -> dict[str, float]:
         return {
-            food_name: self._food_intake_variables[food_name].varValue
+            food_name: self._get_food_intake_value(food_name)
             for food_name in self._food_intake_variables
         }
 
     def _calculate_total_nutrient_values(self) -> dict[str, float]:
-        total_nutrient_values = {}
+        total_nutrient_values: dict[str, float] = {}
 
         for nutrient in FoodInformation.NUTRIENTS:
             total_nutrient_value = sum(
                 getattr(food_information, nutrient)
                 * food_information.grams_per_unit
-                * self._food_intake_variables[food_name].varValue
+                * self._get_food_intake_value(food_information.name)
                 / self._GRAM_CALCULATION_FACTOR
-                for food_name, food_information in zip(
-                    self._food_intake_variables.keys(),
-                    self._food_information,
-                    strict=True,
-                )
+                for food_information in self._food_information
             )
             total_nutrient_values[nutrient] = round(total_nutrient_value, 1)
 
@@ -218,10 +239,19 @@ class NutritionOptimizer:
     def _calculate_pfc_ratio(
         self, total_nutrient_values: dict[str, float]
     ) -> dict[str, float]:
-        pfc_ratio = {}
+        pfc_ratio: dict[str, float] = {}
         recalculated_total_energy = self._recalculate_total_energy(
             total_nutrient_values
         )
+        if recalculated_total_energy == 0:
+            _logger.warning(
+                "Skipping PFC ratio calculation because total energy is zero."
+            )
+            return {
+                nutrient_component: 0.0
+                for nutrient_component in FoodInformation.NUTRIENTS
+                if nutrient_component != "energy"
+            }
 
         for nutrient_component in FoodInformation.NUTRIENTS:
             if nutrient_component == "energy":
@@ -241,24 +271,24 @@ class NutritionOptimizer:
         return pfc_ratio
 
     def _preparation(self) -> None:
-        self._logger.info("Starting preparation for solve.")
+        _logger.info("Starting preparation for solve.")
 
         self._setup_food_intake_variables()
         self._setup_objective_variables()
-        self._setup_lp_problem()
+        self._setup_objective()
         self._setup_constraints()
 
-        self._logger.info("Completed preparation for solve.")
+        _logger.info("Completed preparation for solve.")
 
     def solve(self) -> NutritionOptimizerResult:
         self._preparation()
 
-        self._logger.info("Starting to solve the optimization problem.")
+        _logger.info("Starting to solve the optimization problem.")
         self._problem.solve()
 
         solution_result = LpStatus[self._problem.status]
         if solution_result == "Optimal":
-            self._logger.info("Optimization completed successfully.")
+            _logger.info("Optimization completed successfully.")
 
             food_intakes = self._calculate_food_intakes()
             total_nutrient_values = self._calculate_total_nutrient_values()
@@ -271,9 +301,7 @@ class NutritionOptimizer:
                 "pfc_ratio": pfc_ratio,
             }
 
-        self._logger.warning(
-            f"Optimization failed with status: {solution_result}"
-        )
+        _logger.warning(f"Optimization failed with status: {solution_result}")
         return {
             "status": solution_result,
             "message": "Please review the constraints,"
