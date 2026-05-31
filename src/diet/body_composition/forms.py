@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Any
 
 from flask_wtf import FlaskForm
 from wtforms import DateField, SubmitField
@@ -10,14 +11,15 @@ from wtforms.validators import (
     Optional,
 )
 
-today = date.today()
+
+def _today() -> date:
+    return date.today()
 
 
 class RecordBodyCompositionForm(FlaskForm):
     date = DateField(
         validators=[DataRequired()],
-        default=today,
-        render_kw={"class": "form-control", "max": today},
+        render_kw={"class": "form-control"},
     )
     weight = FloatField(
         validators=[
@@ -48,3 +50,15 @@ class RecordBodyCompositionForm(FlaskForm):
     submit = SubmitField(
         render_kw={"class": "btn btn-primary"},
     )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        today = _today()
+        if self.date.data is None:
+            self.date.data = today
+
+        self.date.render_kw = {
+            **(self.date.render_kw or {}),
+            "max": today.isoformat(),
+        }
