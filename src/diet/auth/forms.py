@@ -2,6 +2,8 @@ from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
+from diet.auth.constants import USERNAME_MAX_LENGTH
+
 
 def normalize_email(email: str | None) -> str | None:
     if email is None:
@@ -38,7 +40,7 @@ class BaseAuthForm(FlaskForm):
 
 class SignupForm(BaseAuthForm):
     username = StringField(
-        validators=[DataRequired(), Length(min=1, max=255)],
+        validators=[DataRequired(), Length(min=1, max=USERNAME_MAX_LENGTH)],
         render_kw={"class": "form-control", "autocomplete": "username"},
     )
     confirm_password = PasswordField(
@@ -101,7 +103,7 @@ class ChangePasswordForm(FlaskForm):
 
 class AccountInformationForm(FlaskForm):
     username = StringField(
-        validators=[DataRequired(), Length(min=1, max=255)],
+        validators=[DataRequired(), Length(min=1, max=USERNAME_MAX_LENGTH)],
         render_kw={"class": "form-control", "autocomplete": "username"},
     )
     update = SubmitField(

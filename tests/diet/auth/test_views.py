@@ -4,6 +4,7 @@ from flask.testing import FlaskClient
 from pytest_mock import MockerFixture
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
+from diet.auth.constants import USERNAME_MAX_LENGTH
 from diet.auth.models import User
 
 
@@ -138,6 +139,28 @@ def test_signup_with_password_mismatch_shows_validation_error(
     assert b"Field must be equal to password." in response.data
 
 
+def test_signup_with_too_long_username_shows_validation_error(
+    client: FlaskClient,
+) -> None:
+    response = client.post(
+        "/auth/signup",
+        data={
+            "username": "a" * 81,
+            "email": "too-long-username@example.com",
+            "password": "Password123!",
+            "confirm_password": "Password123!",
+            "sign_up": "1",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert (
+        f"Field must be between 1 and {USERNAME_MAX_LENGTH} characters long.".encode()  # noqa: E501
+        in response.data
+    )
+
+
 def test_signout_redirects_signin_when_not_authenticated(
     client: FlaskClient,
 ) -> None:
@@ -266,6 +289,32 @@ def test_account_information_with_empty_username_shows_validation_error(
 
     assert response.status_code == 200
     assert b"This field is required." in response.data
+
+
+def test_account_information_with_too_long_username_shows_validation_error(
+    client: FlaskClient, create_user: Callable[..., User]
+) -> None:
+    create_user(email="long-username@example.com", password="Password123!")
+    client.post(
+        "/auth/signin",
+        data={
+            "email": "long-username@example.com",
+            "password": "Password123!",
+            "sign_in": "1",
+        },
+    )
+
+    response = client.post(
+        "/auth/account_information",
+        data={"username": "a" * 81, "update": "1"},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert (
+        f"Field must be between 1 and {USERNAME_MAX_LENGTH} characters long.".encode()  # noqa: E501
+        in response.data
+    )
 
 
 def test_account_information_with_database_error_shows_error(

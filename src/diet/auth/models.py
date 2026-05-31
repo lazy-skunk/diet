@@ -1,6 +1,7 @@
 from flask_login import UserMixin
 from sqlalchemy.orm import validates
 
+from diet.auth.constants import USERNAME_MAX_LENGTH
 from diet.extensions import sql_alchemy
 from diet.utils.custom_logger import get_logger
 from diet.utils.validation_util import (
@@ -18,7 +19,9 @@ _MAX_EMAIL_LENGTH = 254
 
 class User(sql_alchemy.Model, UserMixin):  # type: ignore
     id = sql_alchemy.Column(sql_alchemy.Integer, primary_key=True)
-    username = sql_alchemy.Column(sql_alchemy.String(80), nullable=False)
+    username = sql_alchemy.Column(
+        sql_alchemy.String(USERNAME_MAX_LENGTH), nullable=False
+    )
     email = sql_alchemy.Column(
         sql_alchemy.String(120), unique=True, nullable=False
     )
@@ -35,6 +38,7 @@ class User(sql_alchemy.Model, UserMixin):  # type: ignore
         validate_not_none(key, username)
         username = username.strip()
         validate_not_empty(key, username)
+        validate_by_max_length(key, username, USERNAME_MAX_LENGTH)
 
         _logger.debug(f"End: {key=}, {username=}")
         return username
