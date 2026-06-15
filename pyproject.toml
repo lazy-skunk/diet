@@ -33,7 +33,7 @@ dev = [
     "pytest>=9.1.0",
     "pytest-cov>=6.0.0",
     "pytest-mock>=3.14.1,<4.0.0",
-    "ruff>=0.15.16",
+    "ruff>=0.15.17",
 ]
 
 [tool.ruff]
