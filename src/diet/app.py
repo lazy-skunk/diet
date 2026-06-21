@@ -5,9 +5,18 @@ from flask_debugtoolbar import DebugToolbarExtension
 from flask_login import current_user
 from flask_migrate import Migrate
 
+from diet.auth.models import User
+from diet.auth.views import blueprint as auth_blueprint
+from diet.body_composition.views import (
+    blueprint as body_composition_blueprint,
+)
 from diet.config import get_config
 from diet.extensions import csrf_protect, login_manager, sql_alchemy
+from diet.nutrition_optimizer.views import (
+    blueprint as nutrition_optimizer_blueprint,
+)
 from diet.utils.custom_logger import get_logger
+from diet.views import blueprint as main_blueprint
 
 _logger = get_logger()
 
@@ -60,23 +69,12 @@ def _init_login_manager(app: Flask) -> None:
 
 
 def _register_user_loader() -> None:
-    from diet.auth.models import User
-
     @login_manager.user_loader
-    def load_user(user_id: str) -> User:
+    def load_user(user_id: str) -> User | None:
         return User.query.get(int(user_id))
 
 
 def _register_blueprints(app: Flask) -> None:
-    from diet.auth.views import blueprint as auth_blueprint
-    from diet.body_composition.views import (
-        blueprint as body_composition_blueprint,
-    )
-    from diet.nutrition_optimizer.views import (
-        blueprint as nutrition_optimizer_blueprint,
-    )
-    from diet.views import blueprint as main_blueprint
-
     app.register_blueprint(main_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(body_composition_blueprint)
