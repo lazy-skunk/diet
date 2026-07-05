@@ -1,18 +1,20 @@
+import { translate } from "./i18n.js";
+
 const durationOptions = {
-  sevenDays: { value: "7d", label: "7 Days", unit: "days", amount: 7 },
-  thirtyDays: { value: "30d", label: "30 Days", unit: "days", amount: 30 },
-  ninetyDays: { value: "90d", label: "90 Days", unit: "days", amount: 90 },
+  sevenDays: { value: "7d", label: translate("js.7_days"), unit: "days", amount: 7 },
+  thirtyDays: { value: "30d", label: translate("js.30_days"), unit: "days", amount: 30 },
+  ninetyDays: { value: "90d", label: translate("js.90_days"), unit: "days", amount: 90 },
   oneHundredEightyDays: {
     value: "180d",
-    label: "180 Days",
+    label: translate("js.180_days"),
     unit: "days",
     amount: 180,
   },
-  sixMonths: { value: "6m", label: "6 Months", unit: "months", amount: 6 },
-  oneYear: { value: "12m", label: "1 Year", unit: "months", amount: 12 },
+  sixMonths: { value: "6m", label: translate("js.6_months"), unit: "months", amount: 6 },
+  oneYear: { value: "12m", label: translate("js.1_year"), unit: "months", amount: 12 },
   threeYears: {
     value: "36m",
-    label: "3 Years",
+    label: translate("js.3_years"),
     unit: "months",
     amount: 36,
   },
@@ -22,7 +24,7 @@ export const defaultGranularity = "daily";
 
 export const granularityConfig = {
   daily: {
-    label: "Daily",
+    label: translate("js.daily"),
     dataKey: "daily",
     defaultDuration: "30d",
     durationOptions: [
@@ -31,13 +33,13 @@ export const granularityConfig = {
       durationOptions.ninetyDays,
       durationOptions.oneHundredEightyDays,
     ],
-    weightLabel: "Weight",
-    bodyFatLabel: "Body Fat Percentage",
-    weightHeader: "Weight (kg)",
-    bodyFatHeader: "Body Fat Percentage (%)",
+    weightLabel: translate("js.weight"),
+    bodyFatLabel: translate("js.body_fat_percentage"),
+    weightHeader: translate("js.weight_kg"),
+    bodyFatHeader: translate("js.body_fat_percentage_percent"),
   },
   monthly: {
-    label: "Monthly",
+    label: translate("js.monthly"),
     dataKey: "monthly",
     defaultDuration: "12m",
     durationOptions: [
@@ -45,14 +47,15 @@ export const granularityConfig = {
       durationOptions.oneYear,
       durationOptions.threeYears,
     ],
-    weightLabel: "Average Weight",
-    bodyFatLabel: "Average Body Fat Percentage",
-    weightHeader: "Average Weight (kg)",
-    bodyFatHeader: "Average Body Fat Percentage (%)",
-    weightChangeRateHeader: "Change Rate from Last Month (%)",
+    weightLabel: translate("js.average_weight"),
+    bodyFatLabel: translate("js.average_body_fat_percentage"),
+    weightHeader: translate("js.average_weight_kg"),
+    bodyFatHeader: translate("js.average_body_fat_percentage_percent"),
+    weightChangeRateHeader: translate("js.change_rate_last_month"),
   },
 };
 
 export function getGranularityConfig(granularity) {
   return granularityConfig[granularity] || granularityConfig[defaultGranularity];
 }
+

@@ -12,6 +12,12 @@ from diet.body_composition.views import (
 )
 from diet.config import get_config
 from diet.extensions import csrf_protect, login_manager, sql_alchemy
+from diet.i18n import (
+    get_locale,
+    javascript_translations,
+    localized_url,
+    translate,
+)
 from diet.nutrition_optimizer.views import (
     blueprint as nutrition_optimizer_blueprint,
 )
@@ -37,6 +43,7 @@ def create_app(config_key: str) -> Flask:
         _register_error_handlers(app)
 
         _register_request_hooks(app)
+        _register_template_helpers(app)
     except Exception as e:
         _logger.error(e, exc_info=True)
         raise
@@ -85,6 +92,16 @@ def _register_request_hooks(app: Flask) -> None:
     @app.before_request
     def before_request() -> None:
         g.user = current_user
+        g.locale = get_locale()
+
+
+def _register_template_helpers(app: Flask) -> None:
+    app.jinja_env.globals.update(
+        current_locale=get_locale,
+        js_i18n=javascript_translations,
+        localized_url=localized_url,
+        translate=translate,
+    )
 
 
 def _register_error_handlers(app: Flask) -> None:

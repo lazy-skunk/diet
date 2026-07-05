@@ -1,9 +1,10 @@
 {% extends "_base.html" %}
 
 {% block title %}
-    500 Internal Server Error - Diet App
+    {{ translate('error.500.title') }} - {{ translate('app.title') }}
 {% endblock title %}
 
 {% block content %}
-    <h1>500 Internal Server Error</h1>
+    <h1>{{ translate('error.500.title') }}</h1>
 {% endblock content %}
+

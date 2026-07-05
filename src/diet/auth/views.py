@@ -15,6 +15,7 @@ from diet.auth.service import (
     update_password,
     update_username,
 )
+from diet.i18n import translate
 
 blueprint = Blueprint(
     "auth",
@@ -36,15 +37,15 @@ def signup() -> str | Response:
 
         try:
             new_user = register_user(username, email, password)
-        except (ValueError, TypeError) as e:
-            flash(str(e), "danger")
+        except (ValueError, TypeError):
+            flash(translate("flash.email_registered"), "danger")
             return render_template("auth/signup.html", form=form)
         except SQLAlchemyError:
-            flash("Sign-up failed. Please try again later.", "danger")
+            flash(translate("flash.signup_failed"), "danger")
             return render_template("auth/signup.html", form=form)
 
         login_user(new_user)
-        flash("Signed up successfully.", "success")
+        flash(translate("flash.signed_up"), "success")
         return redirect(url_for("body_composition.record_body_composition"))
 
     return render_template("auth/signup.html", form=form)
@@ -62,10 +63,10 @@ def signin() -> str | Response:
 
         if user:
             login_user(user)
-            flash("Signed in successfully.", "success")
+            flash(translate("flash.signed_in"), "success")
             return redirect(url_for("main.index"))
 
-        flash("Sign-in failed. Invalid email or password.", "danger")
+        flash(translate("flash.signin_failed"), "danger")
 
     return render_template("auth/signin.html", form=form)
 
@@ -74,7 +75,7 @@ def signin() -> str | Response:
 @login_required
 def signout() -> Response:
     logout_user()
-    flash("Signed out successfully.", "success")
+    flash(translate("flash.signed_out"), "success")
     return redirect(url_for("main.index"))
 
 
@@ -93,9 +94,9 @@ def account_information() -> str | Response:
         try:
             update_username(current_user, new_username)
         except SQLAlchemyError:
-            flash("Username change failed. Please try again later.", "danger")
+            flash(translate("flash.username_failed"), "danger")
         else:
-            flash("Username changed successfully.", "success")
+            flash(translate("flash.username_changed"), "success")
             return redirect(url_for("auth.account_information"))
 
     form.username.data = current_user.username
@@ -105,7 +106,6 @@ def account_information() -> str | Response:
 @blueprint.route("/change_email", methods=["GET"])
 @login_required
 def change_email() -> str | Response:
-    # TODO: 未実装
     return render_template("auth/change_email.html")
 
 
@@ -118,12 +118,12 @@ def change_password() -> str | Response:
         new_password = form.new_password.data
         try:
             update_password(current_user, current_password, new_password)
-        except ValueError as e:
-            flash(str(e), "danger")
+        except ValueError:
+            flash(translate("flash.invalid_current_password"), "danger")
         except SQLAlchemyError:
-            flash("Password change failed. Please try again later.", "danger")
+            flash(translate("flash.password_failed"), "danger")
         else:
-            flash("Password changed successfully.", "success")
+            flash(translate("flash.password_changed"), "success")
             return redirect(url_for("auth.account_menu"))
 
     return render_template("auth/change_password.html", form=form)
@@ -132,5 +132,4 @@ def change_password() -> str | Response:
 @blueprint.route("/deactivate_account", methods=["GET"])
 @login_required
 def deactivate_account() -> str | Response:
-    # TODO: 未実装
     return render_template("auth/deactivate_account.html")

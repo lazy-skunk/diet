@@ -1,20 +1,32 @@
+import { translate } from "../../static/i18n.js";
+
+const pfcNutrients = [
+    {
+        key: "protein",
+        labelKey: "js.protein",
+        color: "rgb(255, 128, 128)",
+    },
+    {
+        key: "fat",
+        labelKey: "js.fat",
+        color: "rgb(128, 255, 128)",
+    },
+    {
+        key: "carbohydrates",
+        labelKey: "js.carbohydrates",
+        color: "rgb(128, 128, 255)",
+    },
+];
+
 function drawPFCRatioWithTotalEnergy(pfcRatio, totalNutrientValues) {
-    const nutrients = ["protein", "fat", "carbohydrates"];
-    const colors = [
-        "rgb(255, 128, 128)",
-        "rgb(128, 255, 128)",
-        "rgb(128, 128, 255)",
-    ];
-    const pfcData = nutrients.map((nutrient, index) => {
-        const capitalizedNutrient =
-            nutrient.charAt(0).toUpperCase() + nutrient.slice(1);
-        const grams = totalNutrientValues[nutrient];
-        const ratio = pfcRatio[nutrient];
+    const pfcData = pfcNutrients.map((nutrient) => {
+        const grams = totalNutrientValues[nutrient.key];
+        const ratio = pfcRatio[nutrient.key];
 
         return {
-            name: `${capitalizedNutrient} (${grams}g)`,
+            name: `${translate(nutrient.labelKey)} (${grams}g)`,
             y: ratio,
-            color: colors[index],
+            color: nutrient.color,
         };
     });
 
@@ -23,17 +35,17 @@ function drawPFCRatioWithTotalEnergy(pfcRatio, totalNutrientValues) {
             type: "pie",
         },
         title: {
-            text: "PFC Ratio",
+            text: translate("js.pfc_ratio"),
         },
         tooltip: {
             valueSuffix: "%",
         },
         subtitle: {
-            text: `Total Energy: ${totalNutrientValues.energy} kcal`,
+            text: `${translate("js.total_energy")}: ${totalNutrientValues.energy} kcal`,
         },
         series: [
             {
-                name: "Percentage",
+                name: translate("js.percentage"),
                 colorByPoint: true,
                 data: pfcData,
             },
@@ -52,22 +64,22 @@ function drawFoodIntakes(foodIntakes) {
             type: "bar",
         },
         title: {
-            text: "Food Intakes",
+            text: translate("js.food_intakes"),
         },
         xAxis: {
             categories: foodIntakesData.map((item) => item.name),
             title: {
-                text: "Food Item",
+                text: translate("js.food_item"),
             },
         },
         yAxis: {
             title: {
-                text: "Units",
+                text: translate("js.units"),
             },
         },
         series: [
             {
-                name: "Food Intakes",
+                name: translate("js.food_intakes"),
                 data: foodIntakesData.map((item) => item.y),
                 color: "rgb(128, 128, 255)",
                 type: "bar",
@@ -95,6 +107,7 @@ export function handleOptimizationResult(result) {
     }
 
     clearCharts();
-    window.alert(`status: ${result.status}
-message: ${result.message}`);
+    window.alert(`${translate("js.status")}: ${result.status}
+${translate("js.message")}: ${result.message}`);
 }
+

@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 
 {% block title %}
-    Diet App
+    {{ translate('app.title') }}
 {% endblock title %}
 
 {% block extra_js %}
@@ -16,14 +16,14 @@
             <div class="col-6">
                 <div class="form-floating">
                     <select class="form-select" id="granularity-dropdown"></select>
-                    <label for="granularity-dropdown">granularity</label>
+                    <label for="granularity-dropdown">{{ translate('dashboard.granularity') }}</label>
                 </div>
             </div>
 
             <div class="col-6">
                 <div class="form-floating">
                     <select class="form-select" id="duration-dropdown"></select>
-                    <label for="duration-dropdown">duration</label>
+                    <label for="duration-dropdown">{{ translate('dashboard.duration') }}</label>
                 </div>
             </div>
         </div>
@@ -35,3 +35,4 @@
         </table>
     </div>
 {% endblock content %}
+

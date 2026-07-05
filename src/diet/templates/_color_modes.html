@@ -1,4 +1,3 @@
-<!-- 画像 -->
 <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
     <symbol id="check2" viewBox="0 0 16 16">
     <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
@@ -15,7 +14,6 @@
     </symbol>
 </svg>
 
-<!-- ドロップダウン -->
 <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
     <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
             id="bd-theme"
@@ -38,7 +36,7 @@
                 <svg class="bi me-2 opacity-50 theme-icon" width="1em" height="1em">
                     <use href="#sun-fill"></use>
                 </svg>
-                Light
+                {{ translate("theme.light") }}
                 <svg class="bi ms-auto d-none" width="1em" height="1em">
                     <use href="#check2"></use>
                 </svg>
@@ -52,7 +50,7 @@
                 <svg class="bi me-2 opacity-50 theme-icon" width="1em" height="1em">
                     <use href="#moon-stars-fill"></use>
                 </svg>
-                Dark
+                {{ translate("theme.dark") }}
                 <svg class="bi ms-auto d-none" width="1em" height="1em">
                     <use href="#check2"></use>
                 </svg>
@@ -66,7 +64,7 @@
                 <svg class="bi me-2 opacity-50 theme-icon" width="1em" height="1em">
                     <use href="#circle-half"></use>
                 </svg>
-                Auto
+                {{ translate("theme.auto") }}
                 <svg class="bi ms-auto d-none" width="1em" height="1em">
                     <use href="#check2"></use>
                 </svg>

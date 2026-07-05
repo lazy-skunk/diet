@@ -1,27 +1,28 @@
-<h2>Objective</h2>
+<h2>{{ translate('nutrition.objective') }}</h2>
 <table class="table table-bordered table-striped" id="objective-table">
     <thead class="table-dark">
         <tr>
-            <th scope="col">Sense</th>
-            <th scope="col">Nutrient</th>
+            <th scope="col">{{ translate('nutrition.sense') }}</th>
+            <th scope="col">{{ translate('nutrition.nutrient') }}</th>
         </tr>
     </thead>
     <tbody id="objective-input">
         <tr>
             <td>
                 <select class="form-select" name="objective-sense">
-                    <option value="minimize">Minimize</option>
-                    <option value="maximize" selected>Maximize</option>
+                    <option value="minimize">{{ translate('nutrition.minimize') }}</option>
+                    <option value="maximize" selected>{{ translate('nutrition.maximize') }}</option>
                 </select>
             </td>
             <td>
                 <select class="form-select" name="objective-nutrient">
-                    <option value="energy">Energy</option>
-                    <option value="protein">Protein</option>
-                    <option value="fat">Fat</option>
-                    <option value="carbohydrates">Carbohydrates</option>
+                    <option value="energy">{{ translate('nutrition.energy') }}</option>
+                    <option value="protein">{{ translate('nutrition.protein') }}</option>
+                    <option value="fat">{{ translate('nutrition.fat') }}</option>
+                    <option value="carbohydrates">{{ translate('nutrition.carbohydrates') }}</option>
                 </select>
             </td>
         </tr>
     </tbody>
 </table>
+

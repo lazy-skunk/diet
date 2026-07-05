@@ -1,23 +1,24 @@
 {% extends "_base.html" %}
 
 {% block title %}
-    Account Menu - Diet App
+    {{ translate('auth.account_menu.title') }} - {{ translate('app.title') }}
 {% endblock title %}
 
 {% block content %}
-    <h1>Account Menu</h1>
+    <h1>{{ translate('auth.account_menu.title') }}</h1>
     <div class="row">
         <div class="col-6">
             <div class="list-group">
                 <a href="{{ url_for('auth.account_information') }}"
-                   class="list-group-item list-group-item-action">Account Information</a>
+                   class="list-group-item list-group-item-action">{{ translate('auth.account_information.title') }}</a>
                 <a href="{{ url_for('auth.change_email') }}"
-                   class="list-group-item list-group-item-action">Change Email</a>
+                   class="list-group-item list-group-item-action">{{ translate('auth.change_email.title') }}</a>
                 <a href="{{ url_for('auth.change_password') }}"
-                   class="list-group-item list-group-item-action">Change Password</a>
+                   class="list-group-item list-group-item-action">{{ translate('auth.change_password.title') }}</a>
                 <a href="{{ url_for('auth.deactivate_account') }}"
-                   class="list-group-item list-group-item-action">Deactivate Account</a>
+                   class="list-group-item list-group-item-action">{{ translate('auth.deactivate_account.title') }}</a>
             </div>
         </div>
     </div>
 {% endblock content %}
+

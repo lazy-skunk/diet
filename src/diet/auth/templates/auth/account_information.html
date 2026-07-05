@@ -1,13 +1,14 @@
 {% extends "_base.html" %}
 
 {% block title %}
-    Account Information - Diet App
+    {{ translate('auth.account_information.title') }} - {{ translate('app.title') }}
 {% endblock title %}
 
 {% block content %}
-    <h1>Account Information</h1>
+    <h1>{{ translate('auth.account_information.title') }}</h1>
 
     <form method="post" action="{{ url_for('auth.account_information') }}">
         {% include "_form_fields.html" %}
     </form>
 {% endblock content %}
+

@@ -1,14 +1,11 @@
 <header class="navbar navbar-expand-md">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">Diet</a>
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">{{ translate("app.name") }}</a>
 
         <button class="navbar-toggler"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#navbarNav"
-                aria-controls="navbarNav"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
+                data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -16,34 +13,52 @@
             <ul class="navbar-nav ms-auto">
                 {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link px-2" href="{{ url_for('main.index') }}">Home</a>
+                        <a class="nav-link px-2" href="{{ url_for('main.index') }}">{{ translate("nav.home") }}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link px-2"
-                           href="{{ url_for('nutrition_optimizer.index') }}">Nutrition Optimizer</a>
+                           href="{{ url_for('nutrition_optimizer.index') }}">{{ translate("nav.nutrition_optimizer") }}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link px-2"
-                           href="{{ url_for('body_composition.record_body_composition') }}">Record Body Composition</a>
+                           href="{{ url_for('body_composition.record_body_composition') }}">{{ translate("nav.record_body_composition") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-2" href="{{ url_for('auth.account_menu') }}">Account</a>
+                        <a class="nav-link px-2" href="{{ url_for('auth.account_menu') }}">{{ translate("nav.account") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-2" href="{{ url_for('auth.signout') }}">Sign Out</a>
+                        <a class="nav-link px-2" href="{{ url_for('auth.signout') }}">{{ translate("nav.sign_out") }}</a>
                     </li>
                 {% else %}
                     <li class="nav-item">
                         <a class="nav-link px-2"
-                           href="{{ url_for('nutrition_optimizer.index') }}">Nutrition Optimizer</a>
+                           href="{{ url_for('nutrition_optimizer.index') }}">{{ translate("nav.nutrition_optimizer") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-2" href="{{ url_for('auth.signup') }}">Sign Up</a>
+                        <a class="nav-link px-2" href="{{ url_for('auth.signup') }}">{{ translate("nav.sign_up") }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-2" href="{{ url_for('auth.signin') }}">Sign In</a>
+                        <a class="nav-link px-2" href="{{ url_for('auth.signin') }}">{{ translate("nav.sign_in") }}</a>
                     </li>
                 {% endif %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle px-2"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown">
+                        {{ translate("nav.language") }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item{% if current_locale() == 'ja' %} active{% endif %}"
+                               href="{{ localized_url('ja') }}">{{ translate("language.japanese") }}</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item{% if current_locale() == 'en' %} active{% endif %}"
+                               href="{{ localized_url('en') }}">{{ translate("language.english") }}</a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </div>
     </div>

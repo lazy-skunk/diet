@@ -1,16 +1,16 @@
-<h2>Food Information</h2>
+<h2>{{ translate('nutrition.food_information') }}</h2>
 <table class="table table-bordered table-striped" id="food-table">
     <thead class="table-dark">
         <tr>
-            <th scope="col">Food Name</th>
-            <th scope="col">Energy (kcal/100g)</th>
-            <th scope="col">Protein (g/100g)</th>
-            <th scope="col">Fat (g/100g)</th>
-            <th scope="col">Carbohydrates (g/100g)</th>
-            <th scope="col">Grams Per Unit (g)</th>
-            <th scope="col">Minimum Intake (units)</th>
-            <th scope="col">Maximum Intake (units)</th>
-            <th scope="col">Actions</th>
+            <th scope="col">{{ translate('nutrition.food_name') }}</th>
+            <th scope="col">{{ translate('nutrition.energy_per_100g') }}</th>
+            <th scope="col">{{ translate('nutrition.protein_per_100g') }}</th>
+            <th scope="col">{{ translate('nutrition.fat_per_100g') }}</th>
+            <th scope="col">{{ translate('nutrition.carbohydrates_per_100g') }}</th>
+            <th scope="col">{{ translate('nutrition.grams_per_unit') }}</th>
+            <th scope="col">{{ translate('nutrition.minimum_intake') }}</th>
+            <th scope="col">{{ translate('nutrition.maximum_intake') }}</th>
+            <th scope="col">{{ translate('nutrition.actions') }}</th>
         </tr>
     </thead>
     <tbody id="food-inputs">
@@ -77,7 +77,7 @@
 </table>
 
 <button type="button" id="add-food" class="btn btn-outline-primary">
-    Add Food
+    {{ translate('nutrition.add_food') }}
 </button>
 
 <template id="food-template">
@@ -139,7 +139,7 @@
                    required />
         </td>
         <td>
-            <button type="button" class="btn btn-outline-danger">Remove</button>
+            <button type="button" class="btn btn-outline-danger">{{ translate('nutrition.remove') }}</button>
         </td>
     </tr>
 </template>

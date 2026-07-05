@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="auto">
+<html lang="{{ current_locale() }}" data-bs-theme="auto">
     <head>
         <meta charset="utf-8" />
-        <meta name="description"
-              content="Track your diet, monitor body composition, and achieve your health goals with Diet App.">
-        <meta name="keywords" content="Diet Health Training Fitness">
+        <meta name="description" content="{{ translate('meta.description') }}">
+        <meta name="keywords" content="{{ translate('meta.keywords') }}">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="csrf-token" content="{{ csrf_token() }}" />
         <title>
             {% block title %}
             {% endblock title %}
         </title>
+        <script id="diet-i18n" type="application/json">
+            {{ {"locale": current_locale(), "translations": js_i18n()} | tojson }}
+        </script>
         <script src="{{ url_for('static', filename='color-modes.js') }}"></script>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
               rel="stylesheet"

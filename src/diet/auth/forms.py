@@ -3,6 +3,7 @@ from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 from diet.auth.constants import USERNAME_MAX_LENGTH
+from diet.i18n import translate
 
 
 def normalize_email(email: str | None) -> str | None:
@@ -21,6 +22,11 @@ class BaseAuthForm(FlaskForm):
         validators=[DataRequired()],
         render_kw={"class": "form-control"},
     )
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.email.label.text = translate("form.email")
+        self.password.label.text = translate("form.password")
 
     def _order_fields(self, order: list[str]) -> None:
         original_fields = self._fields  # type: ignore
@@ -57,6 +63,13 @@ class SignupForm(BaseAuthForm):
 
     def _post_init(self) -> None:
         self.password.render_kw["autocomplete"] = "new-password"
+        self.username.label.text = translate("form.username")
+        self.confirm_password.label.text = translate("form.confirm_password")
+        self.sign_up.label.text = translate("form.sign_up")
+        self.sign_up.render_kw = {
+            **(self.sign_up.render_kw or {}),
+            "value": translate("form.sign_up"),
+        }
 
         order = [
             "username",
@@ -78,6 +91,11 @@ class SigninForm(BaseAuthForm):
 
     def _post_init(self) -> None:
         self.password.render_kw["autocomplete"] = "current-password"
+        self.sign_in.label.text = translate("form.sign_in")
+        self.sign_in.render_kw = {
+            **(self.sign_in.render_kw or {}),
+            "value": translate("form.sign_in"),
+        }
 
 
 class ChangePasswordForm(FlaskForm):
@@ -100,6 +118,19 @@ class ChangePasswordForm(FlaskForm):
         render_kw={"class": "btn btn-primary"},
     )
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.current_password.label.text = translate("form.current_password")
+        self.new_password.label.text = translate("form.new_password")
+        self.confirm_new_password.label.text = translate(
+            "form.confirm_new_password"
+        )
+        self.change_password.label.text = translate("form.change_password")
+        self.change_password.render_kw = {
+            **(self.change_password.render_kw or {}),
+            "value": translate("form.change_password"),
+        }
+
 
 class AccountInformationForm(FlaskForm):
     username = StringField(
@@ -109,3 +140,12 @@ class AccountInformationForm(FlaskForm):
     update = SubmitField(
         render_kw={"class": "btn btn-primary"},
     )
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.username.label.text = translate("form.username")
+        self.update.label.text = translate("form.update")
+        self.update.render_kw = {
+            **(self.update.render_kw or {}),
+            "value": translate("form.update"),
+        }

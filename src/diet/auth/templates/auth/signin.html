@@ -1,17 +1,18 @@
 {% extends "_base.html" %}
 
 {% block title %}
-    Sign In - Diet App
+    {{ translate('auth.sign_in.title') }} - {{ translate('app.title') }}
 {% endblock title %}
 
 {% block content %}
-    <h1>Sign In</h1>
+    <h1>{{ translate('auth.sign_in.title') }}</h1>
 
     <form method="post" action="{{ url_for('auth.signin') }}">
         {% include "_form_fields.html" %}
     </form>
 
     <p>
-        <a href="{{ url_for('auth.signup') }}">Create a new account (free)</a>
+        <a href="{{ url_for('auth.signup') }}">{{ translate('auth.create_account') }}</a>
     </p>
 {% endblock content %}
+

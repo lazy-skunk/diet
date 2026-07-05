@@ -17,6 +17,7 @@ from diet.body_composition.constants import (
     MIN_BODY_FAT,
     MIN_WEIGHT,
 )
+from diet.i18n import translate
 
 
 def _today() -> date:
@@ -60,6 +61,15 @@ class RecordBodyCompositionForm(FlaskForm):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+
+        self.date.label.text = translate("form.date")
+        self.weight.label.text = translate("form.weight")
+        self.body_fat.label.text = translate("form.body_fat")
+        self.submit.label.text = translate("form.submit")
+        self.submit.render_kw = {
+            **(self.submit.render_kw or {}),
+            "value": translate("form.submit"),
+        }
 
         today = _today()
         if self.date.data is None:

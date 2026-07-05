@@ -1,4 +1,5 @@
 import { getGranularityConfig } from "./bodyCompositionConfig.js";
+import { translate } from "./i18n.js";
 
 let chart = null;
 let chartUnavailable = false;
@@ -17,7 +18,7 @@ function canRenderChart() {
   }
 
   if (!chartUnavailable) {
-    console.error("Chart.js is unavailable.");
+    console.error(translate("js.chart_unavailable"));
     chartUnavailable = true;
   }
   return false;
@@ -59,21 +60,21 @@ function createChart(canvasElement, records, granularity) {
       plugins: {
         title: {
           display: true,
-          text: "Trends in Weight and Body Fat Percentage",
+          text: translate("js.trends_title"),
         },
       },
       scales: {
         y: {
           title: {
             display: true,
-            text: "Weight (kg)",
+            text: translate("js.weight_kg"),
           },
         },
         y1: {
           position: "right",
           title: {
             display: true,
-            text: "Body Fat Percentage (%)",
+            text: translate("js.body_fat_percentage_percent"),
           },
           grid: {
             drawOnChartArea: false,
@@ -103,3 +104,4 @@ export function updateChart(canvasElement, records, granularity) {
   chart.data.datasets[1].data = chartData.bodyFat;
   chart.update();
 }
+

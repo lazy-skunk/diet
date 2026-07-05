@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 
 {% block title %}
-    Nutrition Optimizer
+    {{ translate('nutrition.title') }}
 {% endblock title %}
 
 {% block extra_css %}
@@ -26,3 +26,4 @@
     </div>
     <div>{% include "nutrition_optimizer/_results.html" %}</div>
 {% endblock content %}
+

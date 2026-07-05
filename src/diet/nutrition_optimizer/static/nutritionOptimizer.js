@@ -1,3 +1,4 @@
+import { translate } from "../../static/i18n.js";
 import {
     buildOptimizePayload,
     validateOptimizeControls,
@@ -7,7 +8,7 @@ import { handleOptimizationResult } from "./charts.js";
 function getCsrfToken() {
     const csrfTokenMeta = document.querySelector("meta[name='csrf-token']");
     if (!(csrfTokenMeta instanceof HTMLMetaElement)) {
-        throw new Error("CSRF token is missing");
+        throw new Error(translate("js.csrf_missing"));
     }
 
     return csrfTokenMeta.content;
@@ -45,3 +46,4 @@ export async function optimize() {
         }
     }
 }
+

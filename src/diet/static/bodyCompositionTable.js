@@ -1,12 +1,13 @@
 import { getGranularityConfig } from "./bodyCompositionConfig.js";
 import { sortRecordsByDateDesc } from "./bodyCompositionFilters.js";
+import { translate } from "./i18n.js";
 
 function formatTableValue(value) {
   return value === null || value === undefined ? "-" : value;
 }
 
 function getTableHeaders(config) {
-  const headers = ["Date", config.weightHeader, config.bodyFatHeader];
+  const headers = [translate("js.date"), config.weightHeader, config.bodyFatHeader];
   if (config.weightChangeRateHeader) {
     headers.push(config.weightChangeRateHeader);
   }
@@ -33,7 +34,7 @@ function createTableHead(config) {
 
 function createEmptyTableRow(config) {
   const row = document.createElement("tr");
-  const cell = createCell("td", "No data available.");
+  const cell = createCell("td", translate("js.no_data"));
   cell.colSpan = getTableHeaders(config).length;
   row.appendChild(cell);
   return row;
@@ -74,3 +75,4 @@ export function updateTable(tableElement, records, granularity) {
     createTableBody(records, config, granularity),
   );
 }
+
