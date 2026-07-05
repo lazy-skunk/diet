@@ -68,6 +68,26 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     },
     "form.update": {"ja": "更新", "en": "Update"},
     "form.submit": {"ja": "保存", "en": "Submit"},
+    "validation.required": {
+        "ja": "この項目は必須です。",
+        "en": "This field is required.",
+    },
+    "validation.email": {
+        "ja": "有効なメールアドレスを入力してください。",
+        "en": "Invalid email address.",
+    },
+    "validation.equal_to": {
+        "ja": "%(other_label)sと一致している必要があります。",
+        "en": "Field must be equal to %(other_name)s.",
+    },
+    "validation.length_between": {
+        "ja": "%(min)d文字以上%(max)d文字以下で入力してください。",
+        "en": "Field must be between %(min)d and %(max)d characters long.",
+    },
+    "validation.number_range": {
+        "ja": "%(min)s以上%(max)s以下で入力してください。",
+        "en": "Number must be between %(min)s and %(max)s.",
+    },
     "auth.sign_up.title": {"ja": "サインアップ", "en": "Sign Up"},
     "auth.sign_in.title": {"ja": "サインイン", "en": "Sign In"},
     "auth.create_account": {
@@ -337,11 +357,9 @@ def localized_url(language: str) -> str:
     query_args: dict[str, Any] = request.args.to_dict(flat=True)
     query_args["lang"] = language
 
-    return url_for(
-        request.endpoint or "main.index",
-        **view_args,
-        **query_args,
-    )
+    values = {**view_args, **query_args}
+
+    return url_for(request.endpoint or "main.index", **values)
 
 
 def javascript_translations() -> dict[str, str]:
