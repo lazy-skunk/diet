@@ -145,7 +145,7 @@ def test_signup_with_password_mismatch_shows_validation_error(
     )
 
     assert response.status_code == 200
-    assert b"Field must be equal to password." in response.data
+    assert "パスワードと一致している必要があります。".encode() in response.data
 
 
 def test_signup_with_too_long_username_shows_validation_error(
@@ -165,7 +165,7 @@ def test_signup_with_too_long_username_shows_validation_error(
 
     assert response.status_code == 200
     assert (
-        f"Field must be between 1 and {USERNAME_MAX_LENGTH} characters long.".encode()  # noqa: E501
+        f"1文字以上{USERNAME_MAX_LENGTH}文字以下で入力してください。".encode()  # noqa: E501
         in response.data
     )
 
@@ -297,7 +297,7 @@ def test_account_information_with_empty_username_shows_validation_error(
     )
 
     assert response.status_code == 200
-    assert b"This field is required." in response.data
+    assert "この項目は必須です。".encode() in response.data
 
 
 def test_account_information_with_too_long_username_shows_validation_error(
@@ -321,7 +321,7 @@ def test_account_information_with_too_long_username_shows_validation_error(
 
     assert response.status_code == 200
     assert (
-        f"Field must be between 1 and {USERNAME_MAX_LENGTH} characters long.".encode()  # noqa: E501
+        f"1文字以上{USERNAME_MAX_LENGTH}文字以下で入力してください。".encode()  # noqa: E501
         in response.data
     )
 
