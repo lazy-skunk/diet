@@ -26,14 +26,9 @@ def _today() -> date:
 
 class RecordBodyCompositionForm(FlaskForm):
     date = DateField(
-        validators=[DataRequired()],
         render_kw={"class": "form-control"},
     )
     weight = FloatField(
-        validators=[
-            InputRequired(),
-            NumberRange(min=MIN_WEIGHT, max=MAX_WEIGHT),
-        ],
         render_kw={
             "class": "form-control",
             "type": "number",
@@ -43,10 +38,6 @@ class RecordBodyCompositionForm(FlaskForm):
         },
     )
     body_fat = FloatField(
-        validators=[
-            Optional(),
-            NumberRange(min=MIN_BODY_FAT, max=MAX_BODY_FAT),
-        ],
         render_kw={
             "class": "form-control",
             "type": "number",
@@ -63,8 +54,27 @@ class RecordBodyCompositionForm(FlaskForm):
         super().__init__(*args, **kwargs)
 
         self.date.label.text = translate("form.date")
+        self.date.validators = [
+            DataRequired(message=translate("validation.required")),
+        ]
         self.weight.label.text = translate("form.weight")
+        self.weight.validators = [
+            InputRequired(message=translate("validation.required")),
+            NumberRange(
+                min=MIN_WEIGHT,
+                max=MAX_WEIGHT,
+                message=translate("validation.number_range"),
+            ),
+        ]
         self.body_fat.label.text = translate("form.body_fat")
+        self.body_fat.validators = [
+            Optional(),
+            NumberRange(
+                min=MIN_BODY_FAT,
+                max=MAX_BODY_FAT,
+                message=translate("validation.number_range"),
+            ),
+        ]
         self.submit.label.text = translate("form.submit")
         self.submit.render_kw = {
             **(self.submit.render_kw or {}),

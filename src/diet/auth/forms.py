@@ -15,18 +15,23 @@ def normalize_email(email: str | None) -> str | None:
 class BaseAuthForm(FlaskForm):
     email = StringField(
         filters=[normalize_email],
-        validators=[DataRequired(), Email()],
         render_kw={"class": "form-control", "autocomplete": "username"},
     )
     password = PasswordField(
-        validators=[DataRequired()],
         render_kw={"class": "form-control"},
     )
 
     def __init__(self) -> None:
         super().__init__()
         self.email.label.text = translate("form.email")
+        self.email.validators = [
+            DataRequired(message=translate("validation.required")),
+            Email(message=translate("validation.email")),
+        ]
         self.password.label.text = translate("form.password")
+        self.password.validators = [
+            DataRequired(message=translate("validation.required")),
+        ]
 
     def _order_fields(self, order: list[str]) -> None:
         original_fields = self._fields  # type: ignore
@@ -46,11 +51,9 @@ class BaseAuthForm(FlaskForm):
 
 class SignupForm(BaseAuthForm):
     username = StringField(
-        validators=[DataRequired(), Length(min=1, max=USERNAME_MAX_LENGTH)],
         render_kw={"class": "form-control", "autocomplete": "username"},
     )
     confirm_password = PasswordField(
-        validators=[DataRequired(), EqualTo("password")],
         render_kw={"class": "form-control", "autocomplete": "new-password"},
     )
     sign_up = SubmitField(
@@ -64,7 +67,19 @@ class SignupForm(BaseAuthForm):
     def _post_init(self) -> None:
         self.password.render_kw["autocomplete"] = "new-password"
         self.username.label.text = translate("form.username")
+        self.username.validators = [
+            DataRequired(message=translate("validation.required")),
+            Length(
+                min=1,
+                max=USERNAME_MAX_LENGTH,
+                message=translate("validation.length_between"),
+            ),
+        ]
         self.confirm_password.label.text = translate("form.confirm_password")
+        self.confirm_password.validators = [
+            DataRequired(message=translate("validation.required")),
+            EqualTo("password", message=translate("validation.equal_to")),
+        ]
         self.sign_up.label.text = translate("form.sign_up")
         self.sign_up.render_kw = {
             **(self.sign_up.render_kw or {}),
@@ -100,18 +115,15 @@ class SigninForm(BaseAuthForm):
 
 class ChangePasswordForm(FlaskForm):
     current_password = PasswordField(
-        validators=[DataRequired()],
         render_kw={
             "class": "form-control",
             "autocomplete": "current-password",
         },
     )
     new_password = PasswordField(
-        validators=[DataRequired()],
         render_kw={"class": "form-control", "autocomplete": "new-password"},
     )
     confirm_new_password = PasswordField(
-        validators=[DataRequired(), EqualTo("new_password")],
         render_kw={"class": "form-control", "autocomplete": "new-password"},
     )
     change_password = SubmitField(
@@ -121,10 +133,23 @@ class ChangePasswordForm(FlaskForm):
     def __init__(self) -> None:
         super().__init__()
         self.current_password.label.text = translate("form.current_password")
+        self.current_password.validators = [
+            DataRequired(message=translate("validation.required")),
+        ]
         self.new_password.label.text = translate("form.new_password")
+        self.new_password.validators = [
+            DataRequired(message=translate("validation.required")),
+        ]
         self.confirm_new_password.label.text = translate(
             "form.confirm_new_password"
         )
+        self.confirm_new_password.validators = [
+            DataRequired(message=translate("validation.required")),
+            EqualTo(
+                "new_password",
+                message=translate("validation.equal_to"),
+            ),
+        ]
         self.change_password.label.text = translate("form.change_password")
         self.change_password.render_kw = {
             **(self.change_password.render_kw or {}),
@@ -134,7 +159,6 @@ class ChangePasswordForm(FlaskForm):
 
 class AccountInformationForm(FlaskForm):
     username = StringField(
-        validators=[DataRequired(), Length(min=1, max=USERNAME_MAX_LENGTH)],
         render_kw={"class": "form-control", "autocomplete": "username"},
     )
     update = SubmitField(
@@ -144,6 +168,14 @@ class AccountInformationForm(FlaskForm):
     def __init__(self) -> None:
         super().__init__()
         self.username.label.text = translate("form.username")
+        self.username.validators = [
+            DataRequired(message=translate("validation.required")),
+            Length(
+                min=1,
+                max=USERNAME_MAX_LENGTH,
+                message=translate("validation.length_between"),
+            ),
+        ]
         self.update.label.text = translate("form.update")
         self.update.render_kw = {
             **(self.update.render_kw or {}),
