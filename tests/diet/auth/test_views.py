@@ -67,7 +67,10 @@ def test_signin_with_invalid_credentials_shows_error(
     )
 
     assert response.status_code == 200
-    assert b"Sign-in failed. Invalid email or password." in response.data
+    assert (
+        "サインインに失敗しました。メールアドレスまたはパスワードが正しくありません。".encode()
+        in response.data
+    )
 
 
 def test_signup_page(client: FlaskClient) -> None:
@@ -93,7 +96,10 @@ def test_signup_with_existing_email_shows_error(
     )
 
     assert response.status_code == 200
-    assert b"Email is already registered." in response.data
+    assert (
+        "このメールアドレスはすでに登録されています。".encode()
+        in response.data
+    )
 
 
 def test_signup_with_integrity_error_shows_existing_email_error(
@@ -117,7 +123,10 @@ def test_signup_with_integrity_error_shows_existing_email_error(
     )
 
     assert response.status_code == 200
-    assert b"Email is already registered." in response.data
+    assert (
+        "このメールアドレスはすでに登録されています。".encode()
+        in response.data
+    )
 
 
 def test_signup_with_password_mismatch_shows_validation_error(
@@ -265,7 +274,7 @@ def test_change_password_with_invalid_current_password_shows_error(
     )
 
     assert response.status_code == 200
-    assert b"Invalid current password." in response.data
+    assert "現在のパスワードが正しくありません。".encode() in response.data
 
 
 def test_account_information_with_empty_username_shows_validation_error(
@@ -344,4 +353,7 @@ def test_account_information_with_database_error_shows_error(
     )
 
     assert response.status_code == 200
-    assert b"Username change failed. Please try again later." in response.data
+    assert (
+        "ユーザー名の変更に失敗しました。時間をおいて再度お試しください。".encode()
+        in response.data
+    )
