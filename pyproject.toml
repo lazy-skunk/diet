@@ -26,7 +26,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
-    "djlint>=1.40.3",
+    "djlint>=1.40.5",
     "flask-debugtoolbar>=0.16.0",
     "mypy>=2.1.0",
     "pre-commit>=4.5.1",
