@@ -1,37 +1,20 @@
-from pydantic import BaseModel, ConfigDict
+from diet.api_models import ApiModel
 
 
-def _to_camel(snake_case_str: str) -> str:
-    words = snake_case_str.split("_")
-    return "".join(
-        word.capitalize() if index != 0 else word
-        for index, word in enumerate(words)
-    )
-
-
-class BodyCompositionApiModel(BaseModel):
-    model_config = ConfigDict(
-        alias_generator=_to_camel,
-        populate_by_name=True,
-        loc_by_alias=False,
-        extra="forbid",
-    )
-
-
-class BodyCompositionData(BodyCompositionApiModel):
+class BodyCompositionData(ApiModel):
     date: str
     weight: float
     body_fat: float | None
 
 
-class MonthlyStatistics(BodyCompositionApiModel):
+class MonthlyStatistics(ApiModel):
     date: str
     weight: float | None
     body_fat: float | None
     weight_change_rate: float | None
 
 
-class BodyCompositionDataResponse(BodyCompositionApiModel):
+class BodyCompositionDataResponse(ApiModel):
     body_compositions: list[BodyCompositionData]
     monthly_statistics: list[MonthlyStatistics]
 
