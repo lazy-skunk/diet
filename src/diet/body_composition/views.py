@@ -23,6 +23,7 @@ from diet.body_composition.service import (
 from diet.body_composition.service import (
     get_body_composition_data as get_user_body_composition_data,
 )
+from diet.i18n import translate
 
 from .forms import RecordBodyCompositionForm
 
@@ -56,15 +57,12 @@ def record_body_composition() -> str | Response:
 
         try:
             upsert_body_composition(user_id, input_date, weight, body_fat)
-            flash("Body composition data saved successfully.", "success")
+            flash(translate("flash.body_composition_saved"), "success")
             return redirect(url_for("main.index"))
-        except (ValueError, TypeError) as e:
-            flash(str(e), "danger")
+        except (ValueError, TypeError):
+            flash(translate("flash.body_composition_invalid"), "danger")
         except SQLAlchemyError:
-            flash(
-                "Body composition record failed. Please try again later.",
-                "danger",
-            )
+            flash(translate("flash.body_composition_failed"), "danger")
 
     return render_template(
         "body_composition/record_body_composition.html", form=form

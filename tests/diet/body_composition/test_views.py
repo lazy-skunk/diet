@@ -1,7 +1,9 @@
 import datetime
 from collections.abc import Callable
 
+import pytest
 from flask.testing import FlaskClient
+from pytest_mock import MockerFixture
 
 from diet.auth.models import User
 from diet.body_composition.models import BodyComposition
@@ -46,14 +48,24 @@ def test_record_body_composition_get_sets_latest_values(
     assert b'value="20.1"' in response.data
 
 
+@pytest.mark.parametrize(
+    ("language", "expected_message"),
+    [
+        ("ja", "体組成データを保存しました。"),
+        ("en", "Body composition data saved successfully."),
+    ],
+)
 def test_record_body_composition_post_valid_data_saves_and_redirects(
-    client: FlaskClient, create_user: Callable[..., User]
+    client: FlaskClient,
+    create_user: Callable[..., User],
+    language: str,
+    expected_message: str,
 ) -> None:
     user = create_user(email="bc@example.com", password="Password123!")
     _signin(client, "bc@example.com", "Password123!")
 
     response = client.post(
-        "/body_composition/record_body_composition",
+        f"/body_composition/record_body_composition?lang={language}",
         data={
             "date": "2026-05-24",
             "weight": "72.3",
@@ -66,12 +78,51 @@ def test_record_body_composition_post_valid_data_saves_and_redirects(
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/")
 
+    redirected_response = client.get(response.headers["Location"])
+    assert expected_message.encode() in redirected_response.data
+
     record = BodyComposition.query.filter_by(
         user_id=user.id, date=datetime.date(2026, 5, 24)
     ).first()
     assert record is not None
     assert record.weight == 72.3
     assert record.body_fat == 19.5
+
+
+@pytest.mark.parametrize(
+    ("language", "expected_message"),
+    [
+        ("ja", "入力内容に問題があります。内容を確認してください。"),
+        ("en", "There is a problem with the input. Please review it."),
+    ],
+)
+def test_record_body_composition_does_not_expose_internal_validation_error(
+    client: FlaskClient,
+    create_user: Callable[..., User],
+    mocker: MockerFixture,
+    language: str,
+    expected_message: str,
+) -> None:
+    create_user(email="validation@example.com", password="Password123!")
+    _signin(client, "validation@example.com", "Password123!")
+    mocker.patch(
+        "diet.body_composition.views.upsert_body_composition",
+        side_effect=ValueError("internal validation details"),
+    )
+
+    response = client.post(
+        f"/body_composition/record_body_composition?lang={language}",
+        data={
+            "date": "2026-05-24",
+            "weight": "72.3",
+            "body_fat": "19.5",
+            "submit": "1",
+        },
+    )
+
+    assert response.status_code == 200
+    assert expected_message.encode() in response.data
+    assert b"internal validation details" not in response.data
 
 
 def test_record_body_composition_post_invalid_data_shows_error(
