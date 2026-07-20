@@ -292,8 +292,8 @@ function getFoodSelections() {
         );
 
         const selection = {
-            minimumIntakeGrams: Number.parseInt(minimumIntakeGramsInput.value, 10),
-            maximumIntakeGrams: Number.parseInt(maximumIntakeGramsInput.value, 10),
+            minimumIntakeGrams: minimumIntakeGramsInput.valueAsNumber,
+            maximumIntakeGrams: maximumIntakeGramsInput.valueAsNumber,
         };
 
         const manualNutrients = Object.fromEntries(
@@ -390,7 +390,7 @@ function updateFoodValidity() {
     });
 }
 
-function updateIntakeGramsRangeValidity() {
+function updateIntakeGramsValidity() {
     const foodInput = document.getElementById("food-inputs");
     const rows = foodInput.querySelectorAll("tr");
 
@@ -401,13 +401,32 @@ function updateIntakeGramsRangeValidity() {
         const maximumIntakeGramsInput = row.querySelector(
             "[name='food-maximum-intake-grams']",
         );
-        const minimumIntakeGrams = Number.parseInt(minimumIntakeGramsInput.value, 10);
-        const maximumIntakeGrams = Number.parseInt(maximumIntakeGramsInput.value, 10);
+        const minimumIntakeGrams = minimumIntakeGramsInput.valueAsNumber;
+        const maximumIntakeGrams = maximumIntakeGramsInput.valueAsNumber;
 
+        minimumIntakeGramsInput.setCustomValidity("");
         maximumIntakeGramsInput.setCustomValidity("");
+
         if (
             Number.isFinite(minimumIntakeGrams) &&
+            !Number.isInteger(minimumIntakeGrams)
+        ) {
+            minimumIntakeGramsInput.setCustomValidity(
+                translate("js.intake_grams_must_be_integer"),
+            );
+        }
+        if (
             Number.isFinite(maximumIntakeGrams) &&
+            !Number.isInteger(maximumIntakeGrams)
+        ) {
+            maximumIntakeGramsInput.setCustomValidity(
+                translate("js.intake_grams_must_be_integer"),
+            );
+        }
+
+        if (
+            Number.isInteger(minimumIntakeGrams) &&
+            Number.isInteger(maximumIntakeGrams) &&
             minimumIntakeGrams > maximumIntakeGrams
         ) {
             maximumIntakeGramsInput.setCustomValidity(
@@ -427,7 +446,7 @@ function getValidationControls() {
 
 export function validateOptimizeControls() {
     updateFoodValidity();
-    updateIntakeGramsRangeValidity();
+    updateIntakeGramsValidity();
 
     const firstInvalidControl = getValidationControls().find(
         (control) => !control.checkValidity(),

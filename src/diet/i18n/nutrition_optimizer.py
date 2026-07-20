@@ -106,6 +106,10 @@ NUTRITION_OPTIMIZER_TRANSLATIONS: dict[str, dict[str, str]] = {
         "en": "Maximum intake must be greater than "
         "or equal to minimum intake.",
     },
+    "js.intake_grams_must_be_integer": {
+        "ja": "摂取量は整数で入力してください。",
+        "en": "Intake must be entered as a whole number.",
+    },
     "js.protein": {"ja": "たんぱく質", "en": "Protein"},
     "js.fat": {"ja": "脂質", "en": "Fat"},
     "js.carbohydrates": {"ja": "炭水化物", "en": "Carbohydrates"},

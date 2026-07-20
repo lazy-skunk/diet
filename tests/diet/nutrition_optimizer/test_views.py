@@ -101,6 +101,7 @@ def test_index_page(client: FlaskClient) -> None:
     assert "食品名を入力、または食品一覧から選択".encode() in response.data
     assert "最小摂取量 (g)".encode() in response.data
     assert "最大摂取量 (g)".encode() in response.data
+    assert response.data.count(b'step="1"') == 4
     assert "1単位あたりのグラム数".encode() not in response.data
 
 
