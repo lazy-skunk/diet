@@ -78,7 +78,7 @@ def _init_login_manager(app: Flask) -> None:
 def _register_user_loader() -> None:
     @login_manager.user_loader
     def load_user(user_id: str) -> User | None:
-        return User.query.get(int(user_id))
+        return sql_alchemy.session.get(User, int(user_id))
 
 
 def _register_blueprints(app: Flask) -> None:
