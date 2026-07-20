@@ -8,42 +8,79 @@ import { handleOptimizationResult } from "./charts.js";
 function getCsrfToken() {
     const csrfTokenMeta = document.querySelector("meta[name='csrf-token']");
     if (!(csrfTokenMeta instanceof HTMLMetaElement)) {
-        throw new Error(translate("js.csrf_missing"));
+        throw new Error(translate("js.request_verification_failed"));
     }
 
     return csrfTokenMeta.content;
 }
 
-export async function optimize() {
+async function parseJsonResponse(response) {
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+        throw new Error(translate("js.unexpected_response"));
+    }
+
     try {
-        const optimizeButton = document.getElementById("optimize");
-        if (!validateOptimizeControls()) {
-            return;
+        return await response.json();
+    } catch {
+        throw new Error(translate("js.unexpected_response"));
+    }
+}
+
+export async function optimize() {
+    const optimizeButton = document.getElementById("optimize");
+    if (optimizeButton.disabled || !validateOptimizeControls()) {
+        return;
+    }
+
+    optimizeButton.disabled = true;
+
+    try {
+        const payload = buildOptimizePayload();
+        const csrfToken = getCsrfToken();
+        let response;
+        try {
+            response = await fetch(optimizeButton.dataset.optimizeUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken,
+                },
+                body: JSON.stringify(payload),
+            });
+        } catch {
+            throw new Error(translate("js.unexpected_response"));
         }
 
-        const payload = buildOptimizePayload();
-        const response = await fetch(optimizeButton.dataset.optimizeUrl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCsrfToken(),
-            },
-            body: JSON.stringify(payload),
-        });
-
-        const result = await response.json();
+        const result = await parseJsonResponse(response);
 
         if (!response.ok) {
+            const translationKey = result.errorCode
+                ? `js.${result.errorCode}`
+                : null;
+            const translatedMessage = translationKey
+                ? translate(translationKey)
+                : null;
+            const knownTranslatedMessage =
+                translatedMessage !== translationKey
+                    ? translatedMessage
+                    : null;
             throw new Error(
-                result.message || `Response status: ${response.status}`,
+                knownTranslatedMessage ||
+                    translate("js.unexpected_response"),
             );
         }
 
-        handleOptimizationResult(result);
+        try {
+            handleOptimizationResult(result);
+        } catch {
+            throw new Error(translate("js.unexpected_response"));
+        }
     } catch (error) {
         if (error instanceof Error) {
             window.alert(error.message);
         }
+    } finally {
+        optimizeButton.disabled = false;
     }
 }
-

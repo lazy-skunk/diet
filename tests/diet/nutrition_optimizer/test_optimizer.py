@@ -18,9 +18,8 @@ _FOOD_INFORMATION = [
         protein=12.5,
         fat=10.4,
         carbohydrates=0.3,
-        grams_per_unit=50,
-        minimum_intake=1,
-        maximum_intake=3,
+        minimum_intake_grams=50,
+        maximum_intake_grams=150,
     ),
 ]
 
@@ -36,7 +35,7 @@ _CONSTRAINTS = [
     Constraint(
         min_max="min",
         nutrient="fat",
-        unit="ratio",
+        unit="pfc_ratio",
         value=20,
     ),
 ]
@@ -58,9 +57,14 @@ def test_solve() -> None:
     assert result["status"] == "Optimal"
     optimal_result = cast(OptimalNutritionOptimizerResult, result)
 
-    assert optimal_result["food_intakes"]["boiled_egg"] == 2
-    assert optimal_result["total_nutrient_values"]["energy"] == 134
-    assert "fat" in optimal_result["pfc_ratio"]
+    assert optimal_result["food_intake_grams"]["boiled_egg"] == 149
+    assert isinstance(optimal_result["food_intake_grams"]["boiled_egg"], int)
+    assert optimal_result["total_nutrient_values"]["energy"] == 199.7
+    assert optimal_result["pfc_composition_ratio"] == {
+        "protein": 34.5,
+        "fat": 64.6,
+        "carbohydrates": 0.8,
+    }
 
 
 def test_infeasible() -> None:
@@ -72,10 +76,7 @@ def test_infeasible() -> None:
     assert result["status"] == "Infeasible"
     failed_result = cast(FailedNutritionOptimizerResult, result)
 
-    assert (
-        failed_result["message"] == "Please review the constraints,"
-        " the grams per unit, or the intake values."
-    )
+    assert failed_result["error_code"] == "optimization_infeasible"
 
 
 def test_duplicate_food_names_are_rejected() -> None:
@@ -87,9 +88,8 @@ def test_duplicate_food_names_are_rejected() -> None:
             protein=10,
             fat=8,
             carbohydrates=1,
-            grams_per_unit=50,
-            minimum_intake=0,
-            maximum_intake=3,
+            minimum_intake_grams=0,
+            maximum_intake_grams=150,
         ),
     ]
 
@@ -123,6 +123,64 @@ def test_same_kind_constraints_do_not_conflict() -> None:
     assert result["status"] == "Optimal"
 
 
+def test_pfc_ratio_constraint_uses_pfc_energy_as_denominator() -> None:
+    food_information = [
+        FoodInformation(
+            name="food_with_non_pfc_energy",
+            energy=200,
+            protein=10,
+            fat=10,
+            carbohydrates=10,
+            minimum_intake_grams=100,
+            maximum_intake_grams=100,
+        )
+    ]
+    constraints = [
+        Constraint(
+            min_max="min",
+            nutrient="fat",
+            unit="pfc_ratio",
+            value=50,
+        )
+    ]
+
+    result = NutritionOptimizer(
+        food_information, _OBJECTIVE, constraints
+    ).solve()
+
+    assert result["status"] == "Optimal"
+    optimal_result = cast(OptimalNutritionOptimizerResult, result)
+    assert optimal_result["pfc_composition_ratio"]["fat"] == 52.9
+
+
+def test_pfc_ratio_constraint_rejects_zero_pfc_energy() -> None:
+    food_information = [
+        FoodInformation(
+            name="distilled_spirit",
+            energy=234,
+            protein=0,
+            fat=0,
+            carbohydrates=0,
+            minimum_intake_grams=0,
+            maximum_intake_grams=300,
+        )
+    ]
+    constraints = [
+        Constraint(
+            min_max="min",
+            nutrient="protein",
+            unit="pfc_ratio",
+            value=20,
+        )
+    ]
+
+    result = NutritionOptimizer(
+        food_information, _OBJECTIVE, constraints
+    ).solve()
+
+    assert result["status"] == "Infeasible"
+
+
 def test_solve_with_multiple_foods_calculates_totals_by_food_name() -> None:
     food_information = [
         FoodInformation(
@@ -131,9 +189,8 @@ def test_solve_with_multiple_foods_calculates_totals_by_food_name() -> None:
             protein=12.5,
             fat=10.4,
             carbohydrates=0.3,
-            grams_per_unit=50,
-            minimum_intake=2,
-            maximum_intake=2,
+            minimum_intake_grams=100,
+            maximum_intake_grams=100,
         ),
         FoodInformation(
             name="rice",
@@ -141,9 +198,8 @@ def test_solve_with_multiple_foods_calculates_totals_by_food_name() -> None:
             protein=2.6,
             fat=0.4,
             carbohydrates=37.2,
-            grams_per_unit=150,
-            minimum_intake=1,
-            maximum_intake=1,
+            minimum_intake_grams=150,
+            maximum_intake_grams=150,
         ),
     ]
 
@@ -153,7 +209,10 @@ def test_solve_with_multiple_foods_calculates_totals_by_food_name() -> None:
     assert result["status"] == "Optimal"
     optimal_result = cast(OptimalNutritionOptimizerResult, result)
 
-    assert optimal_result["food_intakes"] == {"boiled_egg": 2, "rice": 1}
+    assert optimal_result["food_intake_grams"] == {
+        "boiled_egg": 100,
+        "rice": 150,
+    }
     assert optimal_result["total_nutrient_values"] == {
         "energy": 368.0,
         "protein": 16.4,
@@ -162,7 +221,7 @@ def test_solve_with_multiple_foods_calculates_totals_by_food_name() -> None:
     }
 
 
-def test_solve_returns_zero_pfc_ratio_when_macro_energy_is_zero() -> None:
+def test_zero_pfc_energy_returns_zero_composition_ratios() -> None:
     food_information = [
         FoodInformation(
             name="zero_macro_food",
@@ -170,9 +229,8 @@ def test_solve_returns_zero_pfc_ratio_when_macro_energy_is_zero() -> None:
             protein=0,
             fat=0,
             carbohydrates=0,
-            grams_per_unit=100,
-            minimum_intake=1,
-            maximum_intake=1,
+            minimum_intake_grams=100,
+            maximum_intake_grams=100,
         )
     ]
 
@@ -182,8 +240,30 @@ def test_solve_returns_zero_pfc_ratio_when_macro_energy_is_zero() -> None:
     assert result["status"] == "Optimal"
     optimal_result = cast(OptimalNutritionOptimizerResult, result)
 
-    assert optimal_result["pfc_ratio"] == {
+    assert optimal_result["pfc_composition_ratio"] == {
         "protein": 0.0,
         "fat": 0.0,
         "carbohydrates": 0.0,
+    }
+
+
+def test_unused_optional_food_defaults_to_zero_intake_grams() -> None:
+    food_information = [
+        FoodInformation(
+            name="optional_zero_nutrient_food",
+            energy=0,
+            protein=0,
+            fat=0,
+            carbohydrates=0,
+            minimum_intake_grams=0,
+            maximum_intake_grams=300,
+        )
+    ]
+
+    result = NutritionOptimizer(food_information, _OBJECTIVE, []).solve()
+
+    assert result["status"] == "Optimal"
+    optimal_result = cast(OptimalNutritionOptimizerResult, result)
+    assert optimal_result["food_intake_grams"] == {
+        "optional_zero_nutrient_food": 0
     }

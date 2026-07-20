@@ -10,9 +10,8 @@ def test_valid_food_information() -> None:
         protein=12.5,
         fat=10.4,
         carbohydrates=0.3,
-        grams_per_unit=50,
-        minimum_intake=1,
-        maximum_intake=3,
+        minimum_intake_grams=50,
+        maximum_intake_grams=150,
     )
 
     assert boiled_egg.name == "boiled_egg"
@@ -20,9 +19,8 @@ def test_valid_food_information() -> None:
     assert boiled_egg.protein == 12.5
     assert boiled_egg.fat == 10.4
     assert boiled_egg.carbohydrates == 0.3
-    assert boiled_egg.grams_per_unit == 50
-    assert boiled_egg.minimum_intake == 1
-    assert boiled_egg.maximum_intake == 3
+    assert boiled_egg.minimum_intake_grams == 50
+    assert boiled_egg.maximum_intake_grams == 150
 
 
 def test_blank_name() -> None:
@@ -33,9 +31,8 @@ def test_blank_name() -> None:
             protein=12.5,
             fat=10.4,
             carbohydrates=0.3,
-            grams_per_unit=50,
-            minimum_intake=1,
-            maximum_intake=3,
+            minimum_intake_grams=50,
+            maximum_intake_grams=150,
         )
 
 
@@ -45,7 +42,7 @@ def test_negative_nutrient_values() -> None:
         with pytest.raises(
             ValueError,
             match="Invalid values for boiled_egg."
-            " All nutrient values must be non-negative.",
+            " All nutrient values must be finite and non-negative.",
         ):
             FoodInformation(
                 name="boiled_egg",
@@ -53,41 +50,50 @@ def test_negative_nutrient_values() -> None:
                 protein=-12.5 if nutrient == "protein" else 12.5,
                 fat=-10.4 if nutrient == "fat" else 10.4,
                 carbohydrates=-0.3 if nutrient == "carbohydrates" else 0.3,
-                grams_per_unit=50,
-                minimum_intake=1,
-                maximum_intake=3,
+                minimum_intake_grams=50,
+                maximum_intake_grams=150,
             )
 
 
-def test_invalid_grams_per_unit() -> None:
+@pytest.mark.parametrize(
+    "invalid_value",
+    [float("nan"), float("inf"), float("-inf")],
+)
+def test_non_finite_nutrient_values(invalid_value: float) -> None:
     with pytest.raises(
         ValueError,
-        match="Invalid grams per unit for boiled_egg."
-        " It must be greater than zero.",
+        match=(
+            "Invalid values for boiled_egg."
+            " All nutrient values must be finite and non-negative."
+        ),
     ):
         FoodInformation(
             name="boiled_egg",
-            energy=134,
+            energy=invalid_value,
             protein=12.5,
             fat=10.4,
             carbohydrates=0.3,
-            grams_per_unit=0,
-            minimum_intake=1,
-            maximum_intake=3,
+            minimum_intake_grams=50,
+            maximum_intake_grams=150,
         )
 
 
-def test_negative_intake_values() -> None:
-    negative_intake_values = [
+def test_negative_intake_grams_values() -> None:
+    negative_intake_grams_values = [
         (-1, 3),
         (1, -3),
     ]
 
-    for minimum_intake, maximum_intake in negative_intake_values:
+    for (
+        minimum_intake_grams,
+        maximum_intake_grams,
+    ) in negative_intake_grams_values:
         with pytest.raises(
             ValueError,
-            match="Both minimum_intake"
-            " and maximum_intake must be non-negative.",
+            match=(
+                "Both minimum_intake_grams and maximum_intake_grams"
+                " must be non-negative."
+            ),
         ):
             FoodInformation(
                 name="boiled_egg",
@@ -95,15 +101,17 @@ def test_negative_intake_values() -> None:
                 protein=12.5,
                 fat=10.4,
                 carbohydrates=0.3,
-                grams_per_unit=50,
-                minimum_intake=minimum_intake,
-                maximum_intake=maximum_intake,
+                minimum_intake_grams=minimum_intake_grams,
+                maximum_intake_grams=maximum_intake_grams,
             )
 
 
-def test_minimum_intake_is_less_than_maximum_intake() -> None:
+def test_minimum_intake_grams_is_less_than_maximum_intake_grams() -> None:
     with pytest.raises(
-        ValueError, match="Maximum_intake must be greater than minimum_intake."
+        ValueError,
+        match=(
+            "Maximum_intake_grams must be greater than minimum_intake_grams."
+        ),
     ):
         FoodInformation(
             name="boiled_egg",
@@ -111,7 +119,6 @@ def test_minimum_intake_is_less_than_maximum_intake() -> None:
             protein=12.5,
             fat=10.4,
             carbohydrates=0.3,
-            grams_per_unit=50,
-            minimum_intake=3,
-            maximum_intake=1,
+            minimum_intake_grams=3,
+            maximum_intake_grams=1,
         )

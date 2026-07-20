@@ -7,7 +7,7 @@ def test_optimize(mocker: MockerFixture) -> None:
     food_information = mocker.sentinel.food_information
     objective = mocker.sentinel.objective
     constraints = mocker.sentinel.constraints
-    domain_result = {"status": "Optimal", "food_intakes": {"egg": 2}}
+    domain_result = {"status": "Optimal", "food_intake_grams": {"egg": 2}}
     mock_optimizer = mocker.Mock()
     mock_optimizer.solve.return_value = domain_result
     mock_optimizer_class = mocker.patch(

@@ -18,10 +18,13 @@ const pfcNutrients = [
     },
 ];
 
-function drawPFCRatioWithTotalEnergy(pfcRatio, totalNutrientValues) {
-    const pfcData = pfcNutrients.map((nutrient) => {
+function drawPfcCompositionRatio(
+    pfcCompositionRatio,
+    totalNutrientValues,
+) {
+    const chartData = pfcNutrients.map((nutrient) => {
         const grams = totalNutrientValues[nutrient.key];
-        const ratio = pfcRatio[nutrient.key];
+        const ratio = pfcCompositionRatio[nutrient.key];
 
         return {
             name: `${translate(nutrient.labelKey)} (${grams}g)`,
@@ -30,12 +33,12 @@ function drawPFCRatioWithTotalEnergy(pfcRatio, totalNutrientValues) {
         };
     });
 
-    Highcharts.chart("pfc-ratio-chart", {
+    Highcharts.chart("pfc-composition-ratio-chart", {
         chart: {
             type: "pie",
         },
         title: {
-            text: translate("js.pfc_ratio"),
+            text: translate("js.pfc_composition_ratio"),
         },
         tooltip: {
             valueSuffix: "%",
@@ -43,44 +46,43 @@ function drawPFCRatioWithTotalEnergy(pfcRatio, totalNutrientValues) {
         subtitle: {
             text: `${translate("js.total_energy")}: ${totalNutrientValues.energy} kcal`,
         },
-        series: [
-            {
-                name: translate("js.percentage"),
-                colorByPoint: true,
-                data: pfcData,
-            },
-        ],
+        series: [{
+            name: translate("js.percentage"),
+            colorByPoint: true,
+            data: chartData,
+            type: "pie",
+        }],
     });
 }
 
-function drawFoodIntakes(foodIntakes) {
-    const foodIntakesData = Object.keys(foodIntakes).map((food) => ({
+function drawFoodIntakeGrams(foodIntakeGrams) {
+    const foodIntakeGramsData = Object.keys(foodIntakeGrams).map((food) => ({
         name: food,
-        y: foodIntakes[food],
+        y: foodIntakeGrams[food],
     }));
 
-    Highcharts.chart("food-intakes-chart", {
+    Highcharts.chart("food-intake-chart", {
         chart: {
             type: "bar",
         },
         title: {
-            text: translate("js.food_intakes"),
+            text: translate("js.food_intake"),
         },
         xAxis: {
-            categories: foodIntakesData.map((item) => item.name),
+            categories: foodIntakeGramsData.map((item) => item.name),
             title: {
                 text: translate("js.food_item"),
             },
         },
         yAxis: {
             title: {
-                text: translate("js.units"),
+                text: translate("js.intake_grams"),
             },
         },
         series: [
             {
-                name: translate("js.food_intakes"),
-                data: foodIntakesData.map((item) => item.y),
+                name: translate("js.food_intake"),
+                data: foodIntakeGramsData.map((item) => item.y),
                 color: "rgb(128, 128, 255)",
                 type: "bar",
             },
@@ -89,25 +91,33 @@ function drawFoodIntakes(foodIntakes) {
 }
 
 function clearCharts() {
-    const foodIntakesChart = document.getElementById("food-intakes-chart");
-    const pfcRatioChart = document.getElementById("pfc-ratio-chart");
+    const foodIntakeGramsChart = document.getElementById("food-intake-chart");
+    const pfcCompositionRatioChart = document.getElementById(
+        "pfc-composition-ratio-chart",
+    );
 
-    foodIntakesChart.textContent = "";
-    pfcRatioChart.textContent = "";
+    foodIntakeGramsChart.textContent = "";
+    pfcCompositionRatioChart.textContent = "";
 }
 
 export function handleOptimizationResult(result) {
     if (result.status === "Optimal") {
-        drawPFCRatioWithTotalEnergy(
-            result.pfcRatio,
+        drawPfcCompositionRatio(
+            result.pfcCompositionRatio,
             result.totalNutrientValues,
         );
-        drawFoodIntakes(result.foodIntakes);
+        drawFoodIntakeGrams(result.foodIntakeGrams);
         return;
     }
 
     clearCharts();
-    window.alert(`${translate("js.status")}: ${result.status}
-${translate("js.message")}: ${result.message}`);
+    const translationKey = result.errorCode
+        ? `js.${result.errorCode}`
+        : "js.optimization_failed";
+    const translatedMessage = translate(translationKey);
+    const message =
+        translatedMessage === translationKey
+            ? translate("js.optimization_failed")
+            : translatedMessage;
+    window.alert(message);
 }
-

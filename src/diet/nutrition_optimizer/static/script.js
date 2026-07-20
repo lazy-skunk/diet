@@ -1,16 +1,16 @@
 import {
-    appendTemplateToTable,
-    initializeNutrientSelectOnChange,
+    fillFoodRow,
+    initializeConstraintRows,
+    initializeFoodRows,
+    initializeNutrientColumns,
 } from "./form.js";
+import { initializeFoodPicker } from "./foodCatalog.js";
 import { optimize } from "./nutritionOptimizer.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("add-food").addEventListener("click", () =>
-        appendTemplateToTable("food-template", "food-inputs"),
-    );
-    initializeNutrientSelectOnChange();
-    document.getElementById("add-constraint").addEventListener("click", () =>
-        appendTemplateToTable("constraint-template", "constraint-inputs"),
-    );
+    const nutrientDefinitions = initializeNutrientColumns();
+    initializeFoodPicker(nutrientDefinitions, fillFoodRow);
+    initializeFoodRows();
+    initializeConstraintRows();
     document.getElementById("optimize").addEventListener("click", () => optimize());
 });

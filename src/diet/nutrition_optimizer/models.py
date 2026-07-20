@@ -1,17 +1,20 @@
 from dataclasses import dataclass
+from math import isfinite
 from typing import ClassVar, Literal, TypedDict
+
+from diet.nutrition_optimizer.nutrients import NUTRIENT_KEYS
 
 
 class OptimalNutritionOptimizerResult(TypedDict):
     status: Literal["Optimal"]
-    food_intakes: dict[str, float]
+    food_intake_grams: dict[str, int]
     total_nutrient_values: dict[str, float]
-    pfc_ratio: dict[str, float]
+    pfc_composition_ratio: dict[str, float]
 
 
 class FailedNutritionOptimizerResult(TypedDict):
     status: str
-    message: str
+    error_code: str
 
 
 NutritionOptimizerResult = (
@@ -26,34 +29,22 @@ class FoodInformation:
     protein: float
     fat: float
     carbohydrates: float
-    grams_per_unit: int
-    minimum_intake: int
-    maximum_intake: int
-
-    PROTEIN_ENERGY_PER_GRAM: ClassVar[int] = 4
-    FAT_ENERGY_PER_GRAM: ClassVar[int] = 9
-    CARBOHYDRATES_ENERGY_PER_GRAM: ClassVar[int] = 4
-    NUTRIENTS: ClassVar[tuple[str, ...]] = (
-        "energy",
-        "protein",
-        "fat",
-        "carbohydrates",
-    )
+    minimum_intake_grams: int
+    maximum_intake_grams: int
 
     def __post_init__(self) -> None:
         self._validate_name_is_not_blank()
-        self._validate_nutrient_values_are_non_negative()
-        self._validate_grams_per_unit_is_greater_than_zero()
-        self._validate_intake_values_are_non_negative()
-        self._validate_minimum_intake_is_less_than_maximum_intake()
+        self._validate_nutrient_values_are_finite_and_non_negative()
+        self._validate_intake_grams_are_non_negative()
+        self._validate_minimum_intake_grams_is_less_than_maximum_intake_grams()
 
     def _validate_name_is_not_blank(self) -> None:
         if not self.name.strip():
             raise ValueError("Food name must be provided.")
 
-    def _validate_nutrient_values_are_non_negative(self) -> None:
+    def _validate_nutrient_values_are_finite_and_non_negative(self) -> None:
         if any(
-            value is None or value < 0
+            value is None or not isfinite(value) or value < 0
             for value in [
                 self.energy,
                 self.protein,
@@ -63,31 +54,28 @@ class FoodInformation:
         ):
             raise ValueError(
                 f"Invalid values for {self.name}."
-                " All nutrient values must be non-negative."
+                " All nutrient values must be finite and non-negative."
             )
 
-    def _validate_grams_per_unit_is_greater_than_zero(self) -> None:
-        if self.grams_per_unit is None or self.grams_per_unit <= 0:
-            raise ValueError(
-                f"Invalid grams per unit for {self.name}."
-                " It must be greater than zero."
-            )
-
-    def _validate_intake_values_are_non_negative(self) -> None:
+    def _validate_intake_grams_are_non_negative(self) -> None:
         if any(
             value is None or value < 0
-            for value in [self.minimum_intake, self.maximum_intake]
+            for value in [self.minimum_intake_grams, self.maximum_intake_grams]
         ):
             raise ValueError(
                 f"Invalid intake values for {self.name}."
-                " Both minimum_intake and maximum_intake must be non-negative."
+                " Both minimum_intake_grams and maximum_intake_grams"
+                " must be non-negative."
             )
 
-    def _validate_minimum_intake_is_less_than_maximum_intake(self) -> None:
-        if self.minimum_intake > self.maximum_intake:
+    def _validate_minimum_intake_grams_is_less_than_maximum_intake_grams(
+        self,
+    ) -> None:
+        if self.minimum_intake_grams > self.maximum_intake_grams:
             raise ValueError(
                 f"Invalid intake range for {self.name}."
-                " Maximum_intake must be greater than minimum_intake."
+                " Maximum_intake_grams must be greater than"
+                " minimum_intake_grams."
             )
 
 
@@ -102,7 +90,7 @@ class Constraint:
     UNITS: ClassVar[tuple[str, ...]] = (
         "amount",
         "energy",
-        "ratio",
+        "pfc_ratio",
     )
 
     def __post_init__(self) -> None:
@@ -110,8 +98,8 @@ class Constraint:
         self._validate_nutrient()
         self._validate_unit()
         self._validate_nutrient_unit_combination()
-        self._validate_value_is_non_negative()
-        self._validate_ratio_value_range()
+        self._validate_value_is_finite_and_non_negative()
+        self._validate_pfc_ratio_value_range()
 
     def _validate_min_max(self) -> None:
         if self.min_max not in self.MIN_MAX:
@@ -121,10 +109,10 @@ class Constraint:
             )
 
     def _validate_nutrient(self) -> None:
-        if self.nutrient not in FoodInformation.NUTRIENTS:
+        if self.nutrient not in NUTRIENT_KEYS:
             raise ValueError(
                 f"Invalid nutrient: {self.nutrient}."
-                f" Valid nutrients are {list(FoodInformation.NUTRIENTS)}."
+                f" Valid nutrients are {list(NUTRIENT_KEYS)}."
             )
 
     def _validate_unit(self) -> None:
@@ -140,19 +128,20 @@ class Constraint:
 
         if self.nutrient != "energy" and self.unit == "energy":
             raise ValueError(
-                "Macronutrient constraints must use amount or ratio units."
+                "Macronutrient constraints must use amount or pfc_ratio units."
             )
 
-    def _validate_value_is_non_negative(self) -> None:
-        if self.value is None or self.value < 0:
+    def _validate_value_is_finite_and_non_negative(self) -> None:
+        if self.value is None or not isfinite(self.value) or self.value < 0:
             raise ValueError(
-                f"Constraint value must be non-negative. Got {self.value}."
+                "Constraint value must be finite and non-negative."
+                f" Got {self.value}."
             )
 
-    def _validate_ratio_value_range(self) -> None:
-        if self.unit == "ratio" and self.value > 100:
+    def _validate_pfc_ratio_value_range(self) -> None:
+        if self.unit == "pfc_ratio" and self.value > 100:
             raise ValueError(
-                f"Ratio constraint value must be between 0 and 100."
+                f"PFC ratio constraint value must be between 0 and 100."
                 f" Got {self.value}."
             )
 
@@ -179,8 +168,8 @@ class Objective:
             )
 
     def _validate_nutrient(self) -> None:
-        if self.nutrient not in FoodInformation.NUTRIENTS:
+        if self.nutrient not in NUTRIENT_KEYS:
             raise ValueError(
                 f"Invalid nutrient: {self.nutrient}."
-                f" Valid nutrients are {list(FoodInformation.NUTRIENTS)}."
+                f" Valid nutrients are {list(NUTRIENT_KEYS)}."
             )

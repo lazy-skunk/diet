@@ -56,7 +56,7 @@ def test_invalid_unit() -> None:
         ValueError,
         match=re.escape(
             "Invalid unit: invalid_unit."
-            " Valid units are ['amount', 'energy', 'ratio']."
+            " Valid units are ['amount', 'energy', 'pfc_ratio']."
         ),
     ):
         Constraint(
@@ -69,13 +69,31 @@ def test_invalid_unit() -> None:
 
 def test_negative_value() -> None:
     with pytest.raises(
-        ValueError, match="Constraint value must be non-negative. Got -1."
+        ValueError,
+        match="Constraint value must be finite and non-negative. Got -1.",
     ):
         Constraint(
             min_max="min",
             nutrient="protein",
             unit="amount",
             value=-1,
+        )
+
+
+@pytest.mark.parametrize(
+    "invalid_value",
+    [float("nan"), float("inf"), float("-inf")],
+)
+def test_non_finite_value(invalid_value: float) -> None:
+    with pytest.raises(
+        ValueError,
+        match="Constraint value must be finite and non-negative.",
+    ):
+        Constraint(
+            min_max="min",
+            nutrient="protein",
+            unit="amount",
+            value=invalid_value,
         )
 
 
@@ -97,7 +115,7 @@ def test_energy_constraint_must_use_energy_unit() -> None:
         Constraint(
             min_max="min",
             nutrient="energy",
-            unit="ratio",
+            unit="pfc_ratio",
             value=10,
         )
 
@@ -105,7 +123,9 @@ def test_energy_constraint_must_use_energy_unit() -> None:
 def test_macronutrient_constraint_must_not_use_energy_unit() -> None:
     with pytest.raises(
         ValueError,
-        match="Macronutrient constraints must use amount or ratio units.",
+        match=(
+            "Macronutrient constraints must use amount or pfc_ratio units."
+        ),
     ):
         Constraint(
             min_max="min",
@@ -115,24 +135,26 @@ def test_macronutrient_constraint_must_not_use_energy_unit() -> None:
         )
 
 
-def test_ratio_value_must_not_exceed_100() -> None:
+def test_pfc_ratio_value_must_not_exceed_100() -> None:
     with pytest.raises(
         ValueError,
-        match="Ratio constraint value must be between 0 and 100. Got 101.",
+        match=(
+            "PFC ratio constraint value must be between 0 and 100. Got 101."
+        ),
     ):
         Constraint(
             min_max="max",
             nutrient="protein",
-            unit="ratio",
+            unit="pfc_ratio",
             value=101,
         )
 
 
-def test_ratio_value_allows_100() -> None:
+def test_pfc_ratio_value_allows_100() -> None:
     constraint = Constraint(
         min_max="max",
         nutrient="protein",
-        unit="ratio",
+        unit="pfc_ratio",
         value=100,
     )
 

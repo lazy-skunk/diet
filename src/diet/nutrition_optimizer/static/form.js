@@ -1,3 +1,21 @@
+import { translate } from "../../static/i18n.js";
+import { addFoodPickerTrigger } from "./foodCatalog.js";
+
+let nutrientDefinitions = [];
+
+function parseEmbeddedJson(elementId) {
+    const element = document.getElementById(elementId);
+    if (!(element instanceof HTMLScriptElement) || !element.textContent) {
+        throw new Error(`Missing embedded JSON: ${elementId}`);
+    }
+
+    return JSON.parse(element.textContent);
+}
+
+function initializeNutrientDefinitions() {
+    nutrientDefinitions = parseEmbeddedJson("nutrient-definition-data");
+}
+
 function updateUnitOptionsWithTemplate(select, templateId) {
     const template = document.getElementById(templateId);
     const clonedTemplate = template.content.cloneNode(true);
@@ -18,7 +36,10 @@ function updateUnitOptions(select) {
     }
 
     unitSelect.disabled = false;
-    updateUnitOptionsWithTemplate(unitSelect, "unit-options-amount-ratio");
+    updateUnitOptionsWithTemplate(
+        unitSelect,
+        "unit-options-amount-pfc-ratio",
+    );
     updateConstraintValueAttributes(row);
 }
 
@@ -27,7 +48,199 @@ function removeRowFromTable(button) {
     row.remove();
 }
 
+function formatNutrientLabel(definition) {
+    const label = definition.name;
+    if (!definition.displayUnit) {
+        return label;
+    }
+
+    return `${label} (${definition.displayUnit})`;
+}
+
+function clearGeneratedColumns(selector) {
+    document.querySelectorAll(selector).forEach((element) => element.remove());
+}
+
+function createHeaderCell(definition, attributeName) {
+    const header = document.createElement("th");
+    header.scope = "col";
+    header.dataset[attributeName] = definition.identifier;
+    header.textContent = formatNutrientLabel(definition);
+    header.title = definition.name;
+    return header;
+}
+
+function nutrientInputName(definition) {
+    return `food-nutrient-${definition.key}`;
+}
+
+function getManualNutrientValues(row) {
+    return Object.fromEntries(
+        nutrientDefinitions.map((definition) => {
+            const input = row.querySelector(
+                `[name='${nutrientInputName(definition)}']`,
+            );
+            return [definition.identifier, input?.value || ""];
+        }),
+    );
+}
+
+function createFoodNutrientCell(definition, existingValues) {
+    const cell = document.createElement("td");
+    const input = document.createElement("input");
+    cell.dataset.generatedFoodCell = definition.identifier;
+    cell.title = definition.name;
+    input.type = "number";
+    input.className = "form-control";
+    input.name = nutrientInputName(definition);
+    input.min = "0";
+    input.step = "any";
+    input.required = true;
+    input.value = existingValues[definition.identifier] ?? "";
+
+    cell.appendChild(input);
+    return cell;
+}
+
+function renderFoodTableNutrientColumns() {
+    const headerRow = document.querySelector("#food-table thead tr");
+    const minimumHeader = headerRow.querySelector(
+        "[data-static-column='minimum']",
+    );
+
+    clearGeneratedColumns("[data-generated-food-column]");
+    nutrientDefinitions.forEach((definition) => {
+        headerRow.insertBefore(
+            createHeaderCell(definition, "generatedFoodColumn"),
+            minimumHeader,
+        );
+    });
+
+    document.querySelectorAll("#food-inputs tr").forEach((row) => {
+        const existingValues = getManualNutrientValues(row);
+        const minimumCell = row.querySelector(
+            "[data-static-cell='minimum']",
+        );
+
+        row.querySelectorAll("[data-generated-food-cell]").forEach((cell) =>
+            cell.remove(),
+        );
+        nutrientDefinitions.forEach((definition) => {
+            row.insertBefore(
+                createFoodNutrientCell(definition, existingValues),
+                minimumCell,
+            );
+        });
+    });
+}
+
+export function fillFoodRow(row, food) {
+    const foodNameInput = row.querySelector("[name='food-name']");
+
+    foodNameInput.value = food.name;
+    foodNameInput.setCustomValidity("");
+    nutrientDefinitions.forEach((definition) => {
+        const input = row.querySelector(
+            `[name='${nutrientInputName(definition)}']`,
+        );
+        input.value = food.nutrientValues[definition.identifier] ?? "";
+    });
+}
+
+function updateFoodActionButtons() {
+    const rows = document.querySelectorAll("#food-inputs tr");
+    rows.forEach((row) => {
+        const removeButton = row.querySelector("[data-remove-food-row]");
+        if (removeButton) {
+            removeButton.disabled = rows.length === 1;
+        }
+    });
+}
+
+function addFoodRowAfter(button) {
+    const templateElement = document.getElementById("food-template");
+    const clonedTemplate = templateElement.content.cloneNode(true);
+    const currentRow = button.closest("tr");
+
+    addEventListenersToTemplate(clonedTemplate);
+    currentRow.after(clonedTemplate);
+    renderFoodTableNutrientColumns();
+    updateFoodActionButtons();
+}
+
+function removeFoodRow(button) {
+    const rows = document.querySelectorAll("#food-inputs tr");
+    if (rows.length === 1) {
+        return;
+    }
+
+    removeRowFromTable(button);
+    updateFoodActionButtons();
+}
+
+function addFoodActionTriggers(root) {
+    const addButton = root.querySelector("[data-add-food-row]");
+    if (addButton) {
+        addButton.addEventListener("click", () => addFoodRowAfter(addButton));
+    }
+
+    const removeButton = root.querySelector("[data-remove-food-row]");
+    if (removeButton) {
+        removeButton.addEventListener("click", () => removeFoodRow(removeButton));
+    }
+}
+
+function updateConstraintActionButtons() {
+    const rows = document.querySelectorAll("#constraint-inputs tr");
+    rows.forEach((row) => {
+        const removeButton = row.querySelector("[data-remove-constraint-row]");
+        if (removeButton) {
+            removeButton.disabled = rows.length === 1;
+        }
+    });
+}
+
+function addConstraintRowAfter(button) {
+    const templateElement = document.getElementById("constraint-template");
+    const clonedTemplate = templateElement.content.cloneNode(true);
+    const currentRow = button.closest("tr");
+
+    addEventListenersToTemplate(clonedTemplate);
+    currentRow.after(clonedTemplate);
+    updateConstraintActionButtons();
+}
+
+function removeConstraintRow(button) {
+    const rows = document.querySelectorAll("#constraint-inputs tr");
+    if (rows.length === 1) {
+        return;
+    }
+
+    removeRowFromTable(button);
+    updateConstraintActionButtons();
+}
+
+function addConstraintActionTriggers(root) {
+    const addButton = root.querySelector("[data-add-constraint-row]");
+    if (addButton) {
+        addButton.addEventListener("click", () =>
+            addConstraintRowAfter(addButton),
+        );
+    }
+
+    const removeButton = root.querySelector("[data-remove-constraint-row]");
+    if (removeButton) {
+        removeButton.addEventListener("click", () =>
+            removeConstraintRow(removeButton),
+        );
+    }
+}
+
 function addEventListenersToTemplate(template) {
+    addFoodPickerTrigger(template);
+    addFoodActionTriggers(template);
+    addConstraintActionTriggers(template);
+
     const nutrientSelect = template.querySelector(
         "[name='constraint-nutrient']",
     );
@@ -44,66 +257,61 @@ function addEventListenersToTemplate(template) {
             updateConstraintValueAttributes(row);
         });
     }
-
-    const removeButton = template.querySelector("button");
-    removeButton.addEventListener("click", () =>
-        removeRowFromTable(removeButton),
-    );
 }
 
-export function appendTemplateToTable(templateId, targetId) {
-    const templateElement = document.getElementById(templateId);
-    const targetElement = document.getElementById(targetId);
-    const clonedTemplate = templateElement.content.cloneNode(true);
-
-    addEventListenersToTemplate(clonedTemplate);
-    targetElement.appendChild(clonedTemplate);
-}
-
-export function initializeNutrientSelectOnChange() {
-    const nutrientSelect = document.querySelector("[name='constraint-nutrient']");
-    nutrientSelect.addEventListener("change", () => {
-        updateUnitOptions(nutrientSelect);
+export function initializeFoodRows() {
+    document.querySelectorAll("#food-inputs tr").forEach((row) => {
+        addEventListenersToTemplate(row);
     });
-
-    const unitSelect = document.querySelector("[name='constraint-unit']");
-    unitSelect.addEventListener("change", () => {
-        const row = unitSelect.closest("tr");
-        updateConstraintValueAttributes(row);
-    });
+    updateFoodActionButtons();
 }
 
-function getFoodInformation() {
+export function initializeConstraintRows() {
+    document.querySelectorAll("#constraint-inputs tr").forEach((row) => {
+        addEventListenersToTemplate(row);
+    });
+    updateConstraintActionButtons();
+}
+
+export function initializeNutrientColumns() {
+    initializeNutrientDefinitions();
+    renderFoodTableNutrientColumns();
+    return nutrientDefinitions;
+}
+
+function getFoodSelections() {
     const foodInput = document.getElementById("food-inputs");
     const rows = foodInput.querySelectorAll("tr");
 
     return Array.from(rows).map((row) => {
-        const nameInput = row.querySelector("[name='food-name']");
-        const gramsPerUnitInput = row.querySelector(
-            "[name='food-grams-per-unit']",
+        const minimumIntakeGramsInput = row.querySelector(
+            "[name='food-minimum-intake-grams']",
         );
-        const minimumIntakeInput = row.querySelector(
-            "[name='food-minimum-intake']",
+        const maximumIntakeGramsInput = row.querySelector(
+            "[name='food-maximum-intake-grams']",
         );
-        const maximumIntakeInput = row.querySelector(
-            "[name='food-maximum-intake']",
-        );
-        const energyInput = row.querySelector("[name='food-energy']");
-        const proteinInput = row.querySelector("[name='food-protein']");
-        const fatInput = row.querySelector("[name='food-fat']");
-        const carbohydratesInput = row.querySelector(
-            "[name='food-carbohydrates']",
+
+        const selection = {
+            minimumIntakeGrams: Number.parseInt(minimumIntakeGramsInput.value, 10),
+            maximumIntakeGrams: Number.parseInt(maximumIntakeGramsInput.value, 10),
+        };
+
+        const manualNutrients = Object.fromEntries(
+            nutrientDefinitions.map((definition) => {
+                const input = row.querySelector(
+                    `[name='${nutrientInputName(definition)}']`,
+                );
+                return [
+                    definition.key,
+                    Number.parseFloat(input.value),
+                ];
+            }),
         );
 
         return {
-            name: nameInput.value.trim(),
-            gramsPerUnit: Number.parseInt(gramsPerUnitInput.value, 10),
-            minimumIntake: Number.parseInt(minimumIntakeInput.value, 10),
-            maximumIntake: Number.parseInt(maximumIntakeInput.value, 10),
-            energy: Number.parseFloat(energyInput.value),
-            protein: Number.parseFloat(proteinInput.value),
-            fat: Number.parseFloat(fatInput.value),
-            carbohydrates: Number.parseFloat(carbohydratesInput.value),
+            ...selection,
+            foodName: row.querySelector("[name='food-name']").value.trim(),
+            ...manualNutrients,
         };
     });
 }
@@ -141,7 +349,7 @@ function getConstraints() {
 
 export function buildOptimizePayload() {
     return {
-        foodInformation: getFoodInformation(),
+        foodSelections: getFoodSelections(),
         objective: getObjective(),
         constraints: getConstraints(),
     };
@@ -151,7 +359,7 @@ function updateConstraintValueAttributes(row) {
     const unitSelect = row.querySelector("[name='constraint-unit']");
     const valueInput = row.querySelector("[name='constraint-value']");
 
-    if (unitSelect.value === "ratio") {
+    if (unitSelect.value === "pfc_ratio") {
         valueInput.max = "100";
         return;
     }
@@ -159,28 +367,51 @@ function updateConstraintValueAttributes(row) {
     valueInput.removeAttribute("max");
 }
 
-function updateIntakeRangeValidity() {
+function updateFoodValidity() {
+    const foodRows = document.querySelectorAll("#food-inputs tr");
+    const foodNames = new Set();
+
+    foodRows.forEach((row) => {
+        const foodNameInput = row.querySelector("[name='food-name']");
+        const foodName = foodNameInput.value.trim();
+
+        foodNameInput.setCustomValidity("");
+        if (!foodName) {
+            foodNameInput.setCustomValidity(translate("js.food_name_required"));
+            return;
+        }
+
+        if (foodNames.has(foodName)) {
+            foodNameInput.setCustomValidity(translate("js.duplicate_food_name"));
+            return;
+        }
+
+        foodNames.add(foodName);
+    });
+}
+
+function updateIntakeGramsRangeValidity() {
     const foodInput = document.getElementById("food-inputs");
     const rows = foodInput.querySelectorAll("tr");
 
     rows.forEach((row) => {
-        const minimumIntakeInput = row.querySelector(
-            "[name='food-minimum-intake']",
+        const minimumIntakeGramsInput = row.querySelector(
+            "[name='food-minimum-intake-grams']",
         );
-        const maximumIntakeInput = row.querySelector(
-            "[name='food-maximum-intake']",
+        const maximumIntakeGramsInput = row.querySelector(
+            "[name='food-maximum-intake-grams']",
         );
-        const minimumIntake = Number.parseInt(minimumIntakeInput.value, 10);
-        const maximumIntake = Number.parseInt(maximumIntakeInput.value, 10);
+        const minimumIntakeGrams = Number.parseInt(minimumIntakeGramsInput.value, 10);
+        const maximumIntakeGrams = Number.parseInt(maximumIntakeGramsInput.value, 10);
 
-        maximumIntakeInput.setCustomValidity("");
+        maximumIntakeGramsInput.setCustomValidity("");
         if (
-            Number.isFinite(minimumIntake) &&
-            Number.isFinite(maximumIntake) &&
-            minimumIntake > maximumIntake
+            Number.isFinite(minimumIntakeGrams) &&
+            Number.isFinite(maximumIntakeGrams) &&
+            minimumIntakeGrams > maximumIntakeGrams
         ) {
-            maximumIntakeInput.setCustomValidity(
-                "Maximum intake must be greater than or equal to minimum intake.",
+            maximumIntakeGramsInput.setCustomValidity(
+                translate("js.invalid_intake_grams_range"),
             );
         }
     });
@@ -195,7 +426,8 @@ function getValidationControls() {
 }
 
 export function validateOptimizeControls() {
-    updateIntakeRangeValidity();
+    updateFoodValidity();
+    updateIntakeGramsRangeValidity();
 
     const firstInvalidControl = getValidationControls().find(
         (control) => !control.checkValidity(),

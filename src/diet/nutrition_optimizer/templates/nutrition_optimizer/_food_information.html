@@ -1,145 +1,164 @@
-<h2>{{ translate('nutrition.food_information') }}</h2>
-<table class="table table-bordered table-striped" id="food-table">
-    <thead class="table-dark">
-        <tr>
-            <th scope="col">{{ translate('nutrition.food_name') }}</th>
-            <th scope="col">{{ translate('nutrition.energy_per_100g') }}</th>
-            <th scope="col">{{ translate('nutrition.protein_per_100g') }}</th>
-            <th scope="col">{{ translate('nutrition.fat_per_100g') }}</th>
-            <th scope="col">{{ translate('nutrition.carbohydrates_per_100g') }}</th>
-            <th scope="col">{{ translate('nutrition.grams_per_unit') }}</th>
-            <th scope="col">{{ translate('nutrition.minimum_intake') }}</th>
-            <th scope="col">{{ translate('nutrition.maximum_intake') }}</th>
-            <th scope="col">{{ translate('nutrition.actions') }}</th>
-        </tr>
-    </thead>
-    <tbody id="food-inputs">
-        <tr>
-            <td>
-                <input type="text" class="form-control" name="food-name" required />
-            </td>
-            <td>
-                <input type="number"
-                       class="form-control"
-                       name="food-energy"
-                       min="0"
-                       step="any"
-                       required />
-            </td>
-            <td>
-                <input type="number"
-                       class="form-control"
-                       name="food-protein"
-                       min="0"
-                       step="any"
-                       required />
-            </td>
-            <td>
-                <input type="number"
-                       class="form-control"
-                       name="food-fat"
-                       min="0"
-                       step="any"
-                       required />
-            </td>
-            <td>
-                <input type="number"
-                       class="form-control"
-                       name="food-carbohydrates"
-                       min="0"
-                       step="any"
-                       required />
-            </td>
-            <td>
-                <input type="number"
-                       class="form-control"
-                       name="food-grams-per-unit"
-                       min="1"
-                       required />
-            </td>
-            <td>
-                <input type="number"
-                       class="form-control"
-                       name="food-minimum-intake"
-                       min="0"
-                       required />
-            </td>
-            <td>
-                <input type="number"
-                       class="form-control"
-                       name="food-maximum-intake"
-                       min="0"
-                       required />
-            </td>
-            <td class="no-action"></td>
-        </tr>
-    </tbody>
-</table>
-
-<button type="button" id="add-food" class="btn btn-outline-primary">
-    {{ translate('nutrition.add_food') }}
-</button>
+<h2>{{ translate("nutrition.food_information") }}</h2>
+<div class="table-responsive">
+    <table class="table table-bordered table-striped" id="food-table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col" data-static-column="catalog">{{ translate("nutrition.select_food") }}</th>
+                <th scope="col">{{ translate("nutrition.food_name") }}</th>
+                <th scope="col" data-static-column="minimum">{{ translate("nutrition.minimum_intake_grams") }}</th>
+                <th scope="col" data-static-column="maximum">{{ translate("nutrition.maximum_intake_grams") }}</th>
+                <th scope="col" data-static-column="actions">{{ translate("nutrition.actions") }}</th>
+            </tr>
+        </thead>
+        <tbody id="food-inputs">
+            <tr>
+                <td data-static-cell="catalog">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-food-picker-trigger>🔍</button>
+                </td>
+                <td>
+                    <input type="text"
+                           class="form-control"
+                           name="food-name"
+                           placeholder="{{ translate('nutrition.choose_food') }}"
+                           required />
+                </td>
+                <td data-static-cell="minimum">
+                    <input type="number"
+                           class="form-control"
+                           name="food-minimum-intake-grams"
+                           min="0"
+                           required />
+                </td>
+                <td data-static-cell="maximum">
+                    <input type="number"
+                           class="form-control"
+                           name="food-maximum-intake-grams"
+                           min="0"
+                           required />
+                </td>
+                <td data-static-cell="actions">
+                    <div class="d-flex gap-2">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary"
+                                data-add-food-row>+</button>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                data-remove-food-row
+                                disabled>×</button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
 <template id="food-template">
     <tr>
-        <td>
-            <input type="text" class="form-control" name="food-name" required />
+        <td data-static-cell="catalog">
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    data-food-picker-trigger>🔍</button>
         </td>
         <td>
-            <input type="number"
+            <input type="text"
                    class="form-control"
-                   name="food-energy"
-                   min="0"
-                   step="any"
+                   name="food-name"
+                   placeholder="{{ translate('nutrition.choose_food') }}"
                    required />
         </td>
-        <td>
+        <td data-static-cell="minimum">
             <input type="number"
                    class="form-control"
-                   name="food-protein"
-                   min="0"
-                   step="any"
-                   required />
-        </td>
-        <td>
-            <input type="number"
-                   class="form-control"
-                   name="food-fat"
-                   min="0"
-                   step="any"
-                   required />
-        </td>
-        <td>
-            <input type="number"
-                   class="form-control"
-                   name="food-carbohydrates"
-                   min="0"
-                   step="any"
-                   required />
-        </td>
-        <td>
-            <input type="number"
-                   class="form-control"
-                   name="food-grams-per-unit"
-                   min="1"
-                   required />
-        </td>
-        <td>
-            <input type="number"
-                   class="form-control"
-                   name="food-minimum-intake"
+                   name="food-minimum-intake-grams"
                    min="0"
                    required />
         </td>
-        <td>
+        <td data-static-cell="maximum">
             <input type="number"
                    class="form-control"
-                   name="food-maximum-intake"
+                   name="food-maximum-intake-grams"
                    min="0"
                    required />
         </td>
-        <td>
-            <button type="button" class="btn btn-outline-danger">{{ translate('nutrition.remove') }}</button>
+        <td data-static-cell="actions">
+            <div class="d-flex gap-2">
+                <button type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        data-add-food-row>+</button>
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        data-remove-food-row>×</button>
+            </div>
         </td>
     </tr>
 </template>
+
+<div class="modal fade"
+     id="food-picker-modal"
+     data-food-catalog-url="{{ url_for('nutrition_optimizer.static', filename='data/food_master.min.json') }}"
+     tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title fs-5">{{ translate("nutrition.select_food_from_catalog") }}</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="food-picker-loading" class="text-center" hidden>{{ translate("nutrition.loading_foods") }}</p>
+                <div class="row g-2 mb-3">
+                    <div class="col-lg-5">
+                        <label class="form-label" for="food-picker-search">{{ translate("nutrition.search") }}</label>
+                        <input type="text"
+                               class="form-control"
+                               id="food-picker-search"
+                               placeholder="{{ translate('nutrition.search_food_placeholder') }}" />
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <label class="form-label" for="food-sort-by">{{ translate("nutrition.sort_by") }}</label>
+                        <select class="form-select" id="food-sort-by">
+                            <option value="name">{{ translate("nutrition.name") }}</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-lg-2">
+                        <label class="form-label" for="food-sort-order">{{ translate("nutrition.order") }}</label>
+                        <select class="form-select" id="food-sort-order">
+                            <option value="desc">{{ translate("nutrition.descending") }}</option>
+                            <option value="asc">{{ translate("nutrition.ascending") }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle"
+                           id="food-picker-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">{{ translate("nutrition.food") }}</th>
+                                <th scope="col" data-picker-static-column="action">{{ translate("nutrition.action") }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="food-picker-options">
+                        </tbody>
+                    </table>
+                </div>
+                <p id="food-picker-empty" class="text-center" hidden>{{ translate("js.no_matching_foods") }}</p>
+                <div class="d-flex justify-content-between align-items-center gap-3">
+                    <span id="food-picker-result-count"></span>
+                    <div id="food-picker-page-navigation"
+                         class="d-flex align-items-center gap-2">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                id="food-picker-previous">{{ translate("nutrition.previous") }}</button>
+                        <span id="food-picker-page-status" aria-live="polite"></span>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                id="food-picker-next">{{ translate("nutrition.next") }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="nutrient-definition-data" type="application/json">{{ nutrient_definitions|tojson }}</script>
