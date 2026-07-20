@@ -1,5 +1,7 @@
+import re
 from collections.abc import Callable
 
+from flask import Flask
 from flask.testing import FlaskClient
 from pytest_mock import MockerFixture
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -173,7 +175,7 @@ def test_signup_with_too_long_username_shows_validation_error(
 def test_signout_redirects_signin_when_not_authenticated(
     client: FlaskClient,
 ) -> None:
-    response = client.get("/auth/signout", follow_redirects=False)
+    response = client.post("/auth/signout", follow_redirects=False)
 
     assert response.status_code == 302
     assert "/auth/signin" in response.headers["Location"]
@@ -192,7 +194,40 @@ def test_signout_redirects_home_when_authenticated(
         },
     )
 
-    response = client.get("/auth/signout", follow_redirects=False)
+    response = client.post("/auth/signout", follow_redirects=False)
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/")
+
+
+def test_signout_does_not_accept_get(client: FlaskClient) -> None:
+    response = client.get("/auth/signout")
+
+    assert response.status_code == 405
+
+
+def test_signout_requires_valid_csrf_token(
+    app: Flask, client: FlaskClient, create_user: Callable[..., User]
+) -> None:
+    user = create_user(email="csrf-signout@example.com")
+    with client.session_transaction() as session:
+        session["_user_id"] = str(user.id)
+        session["_fresh"] = True
+
+    app.config["WTF_CSRF_ENABLED"] = True
+
+    response = client.post("/auth/signout")
+    assert response.status_code == 400
+
+    page = client.get("/")
+    token_match = re.search(rb'name="csrf_token" value="([^"]+)"', page.data)
+    assert token_match is not None
+
+    response = client.post(
+        "/auth/signout",
+        data={"csrf_token": token_match.group(1).decode()},
+        follow_redirects=False,
+    )
 
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/")

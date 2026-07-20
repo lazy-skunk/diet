@@ -71,7 +71,7 @@ def signin() -> str | Response:
     return render_template("auth/signin.html", form=form)
 
 
-@blueprint.route("/signout")
+@blueprint.route("/signout", methods=["POST"])
 @login_required
 def signout() -> Response:
     logout_user()
